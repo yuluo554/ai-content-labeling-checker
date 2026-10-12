@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+*.spec
+# PyInstaller spec 为交付产物，入仓（上方通配默认吞掉，此处例外放行）
+!tools/*.spec
+
+# 数据库与运行产物
+*.db
+*.sqlite
+output/
+reports/
+*.log
+
+# 环境与密钥
+.env
+*.key
+*_private/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
