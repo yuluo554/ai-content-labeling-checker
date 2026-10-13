@@ -133,3 +133,13 @@ PYTHONDONTWRITEBYTECODE=1 py -3.12 -X utf8 -m pytest tests/ -q     # 跨版本
 # 查看现行生效规则数（M1 前应为 0）
 PYTHONPATH=src py -X utf8 -c "from labelcheck.paths import find_data_dir; from labelcheck.rules import effective_ruleset; r=effective_ruleset(find_data_dir()); print(r.verified_rule_count, r.pending_rule_count, r.coordinate)"
 ```
+
+## 七、M0 已发现、留给 M6（发布）的必办项（**勿忘**）
+
+1. **提交元数据邮箱是真实个人邮箱**（`git log --format="%ae %ce"` 可见）——发布前须用
+   `filter-branch --env-filter` 全历史改写为 GitHub noreply，并同步 `git config user.email`。
+   **历史重写属对外结构性动作，须用户明确授权**后再做（skill 阶段 7）。
+2. **脱敏扫描的已知假阳性**（本机实测）：示例标识卡里的**假 sha256 hex 串**（64 个连续
+   数字）会命中"18 位身份证"正则。M6 的审计脚本须给 phone/idcard 模式加 **hex 边界环视**
+   `(?<![0-9a-fA-F])…(?![0-9a-fA-F])`，并把该形态写进 selftest 阴性对照。
+3. **`.gitignore` 需补**：`data/**/_private/`（合成样本的本地私有件不入仓）——M1 建样本时一并加。
