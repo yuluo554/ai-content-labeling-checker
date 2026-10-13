@@ -325,14 +325,16 @@ def _has_git(root):
 
 # ------------------------------------------------------------------ 第五步：构建产物本体扫描
 # 内容级扫描证明"仓库树干净"，证明不了"冻结产物干净"——exe/onedir 内嵌的源码路径、构建机
-# 路径要单独扫。**按组合路径签名匹配，不匹配裸词**：Qt DLL 等上游二进制内嵌 `\Users\qt`、
-# `ASUSTek COMPUTER INC` 一类厂商串，裸 `Users\` / 用户名片段会成片误报（系列实录）。
-# 真实泄露面 = "我们的工作根/仓库名/私有目录"出现在产物树**顶层**。
+# 路径要单独扫。**按组合路径签名匹配，不匹配裸词**：上游二进制会内嵌各自的构建机路径
+# （Qt 的构建用户名、CPython 发布机目录）与厂商串，裸"用户目录路径"或裸用户名会成片误报
+# （系列实录）。真实泄露面 = "**我们的**工作根/仓库名/私有目录"。
 _ARTIFACT_SIGS = (
     ("repo_name", re.compile(rb"ai-content-labeling-checker")),
     ("work_root", re.compile(rb"10-13-ai-content-labeling-checker")),
     ("programdata_path", re.compile(rb"[A-Za-z]:[\\/]ProgramData[\\/]")),
-    ("home_user_path", re.compile(rb"[A-Za-z]:[\\/]Users[\\/](?!qt\b)[A-Za-z0-9._\-]{2,}")),
+    # 组合签名：本机工作根固定落在 `...\zcode\<repo>` 之下；单独的用户目录路径不算
+    # （上游二进制自带构建机路径，非本项目泄漏面）。
+    ("zcode_workroot", re.compile(rb"[\\/]zcode[\\/]")),
 )
 
 #: 产物顶层不得出现的"禁区成分"（我们的 plan/tests/私有件混入发行包）

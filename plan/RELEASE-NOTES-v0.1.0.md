@@ -9,12 +9,27 @@
 
 ## 下载即用（免安装）
 
-| 产物 | 形态 | 用途 | 校验 |
-|---|---|---|---|
-| `labelcheck-gui-v0.1.0-win64.zip` | 窗口版（无控制台） | 解压后双击 `labelcheck-gui.exe` | `certutil -hashfile labelcheck-gui-v0.1.0-win64.zip SHA256` |
-| `labelcheck-cli-v0.1.0-win64.zip` | 控制台版 | 脚本化 / 无 GUI 机器（可管道取 JSON、判退出码） | `certutil -hashfile labelcheck-cli-v0.1.0-win64.zip SHA256` |
+| 产物 | 形态 | 用途 |
+|---|---|---|
+| `labelcheck-gui-v0.1.0-win64.zip` | 窗口版（无控制台） | 解压后双击 `labelcheck-gui.exe` |
+| `labelcheck-cli-v0.1.0-win64.zip` | 控制台版 | 脚本化 / 无 GUI 机器（可管道取 JSON、判退出码） |
 
-解压到任意目录即可运行（onedir 形态，无需安装 Python）。**校验值见本 Release 附件的 sha256 说明**。
+解压到任意目录即可运行（onedir 形态，无需安装 Python）。
+
+**校验（sha256）**：
+
+| 附件 | 大小（字节） | sha256 |
+|---|---|---|
+| `labelcheck-cli-v0.1.0-win64.zip` | 7401819 | `604df8632f91d1067d378ebe3ae232f065c955a7d2ed39a24ec109cfd138c29e` |
+| `labelcheck-gui-v0.1.0-win64.zip` | 45767613 | `72fd7ab1a4f88f5c7058d4ece5711c43b18cfad0fd0d98db0876481616c2e86c` |
+
+```powershell
+certutil -hashfile labelcheck-cli-v0.1.0-win64.zip SHA256
+certutil -hashfile labelcheck-gui-v0.1.0-win64.zip SHA256
+```
+
+> 两个 zip 均经**中立目录解压 + 冻结态自检**验证（CLI `selfcheck` / GUI `--selftest`：
+> `frozen=true`、数据目录落在解压目录内、生效规则 27 条、六页签）。
 
 ## 能做什么
 
