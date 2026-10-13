@@ -126,7 +126,7 @@ py -X utf8 tools/audit_desensitize.py --selftest # 探测器阳性/阴性对照
 | 4 | 提交 M1–M6 累积工作 | ✅ `6b4667e`（110 文件；无 dist/build/_private） |
 | 5 | `filter-branch --env-filter` 全历史改写邮箱 | ✅ 5 条旧提交改写；输出重定向到文件（**未接管道**，避免 SIGPIPE 坏 ref） |
 | 6 | `rm -rf .git/refs/original` + `reflog expire --expire=now --all` + `gc --prune=now --aggressive` | ✅ 悬空对象清空 |
-| 7 | **验证**：全历史 blob 扫描 + 提交信息扫描 + `log -p` 计数 + `git fsck` | ✅ 固定字面值 `<old-email-local-part>`：blob 0 / 消息 0 / patch 0；fsck 无错 |
+| 7 | **验证**：全历史 blob 扫描 + 提交信息扫描 + `log -p` 计数 + `git fsck` | ✅ 固定字面值（旧邮箱本地片段，此处不复述）：blob 0 / 消息 0 / patch 0；fsck 无错 |
 | 8 | `gh repo create`（**不带 `--push`**）+ 切 SSH 远端 | ✅ 仓库建出；SSH 认证通过 |
 | 9 | `git push -u origin main`（输出重定向，查真实退出码） | ✅ 远端 sha == 本地 sha `91d87f4`；CI 触发（workflow active） |
 
