@@ -1,0 +1,15 @@
+{
+  "card_id": "SAMPLE-IMAGE-METADATA-STRIPPED-0002",
+  "carrier": "image",
+  "source": "synthetic",
+  "content_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "explicit": [
+    {
+      "element": "image_visible_notice",
+      "present": true,
+      "position": "corner"
+    }
+  ],
+  "implicit": {},
+  "notes": "边界情形示例：元数据被剥离但显式标识在（plan/01 §三.3、plan/04 §六）。内容完全虚构"
+}

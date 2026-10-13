@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "_comment": "依据文件注册表。status=verified 的文档+条目才能进入判定路径；active 声明当前生效版本（切换核查口径 = 改这里）。",
+  "documents": [
+    {
+      "doc_id": "labeling-measures",
+      "title": "人工智能生成合成内容标识办法",
+      "doc_number": "国信办通字〔2025〕2 号",
+      "kind": "measure",
+      "issuer": "国家互联网信息办公室、工业和信息化部、公安部、国家广播电视总局",
+      "effective_from": "2025-09-01",
+      "status": "pending",
+      "source_url": "https://www.cac.gov.cn/",
+      "note": "M1：逐条核对条号与本机登记出处后转 verified",
+      "versions": [
+        {
+          "version": "2025-09-01",
+          "effective_from": "2025-09-01",
+          "rules_file": "labeling-measures/2025-09-01.json",
+          "status": "pending",
+          "sha256": null,
+          "source_url": "https://www.cac.gov.cn/",
+          "note": "sha256 由 tools/gen_rulesets.py 生成后回填；M0 为 null（不校验指纹）"
+        }
+      ]
+    },
+    {
+      "doc_id": "gb45438-2025",
+      "title": "网络安全技术 人工智能生成合成内容标识方法",
+      "doc_number": "GB 45438-2025",
+      "kind": "mandatory-standard",
+      "issuer": "国家市场监督管理总局、国家标准化管理委员会",
+      "effective_from": "2025-09-01",
+      "status": "pending",
+      "source_url": "https://openstd.samr.gov.cn/",
+      "note": "强制性国标；M1：隐式标识字段清单与显式位置要求须以标准原文逐字核对",
+      "versions": [
+        {
+          "version": "2025-09-01",
+          "effective_from": "2025-09-01",
+          "rules_file": "gb45438-2025/2025-09-01.json",
+          "status": "pending",
+          "sha256": null,
+          "source_url": "https://openstd.samr.gov.cn/",
+          "note": "sha256 由 tools/gen_rulesets.py 生成后回填；M0 为 null（不校验指纹）"
+        }
+      ]
+    }
+  ],
+  "active": {
+    "labeling-measures": "2025-09-01",
+    "gb45438-2025": "2025-09-01"
+  }
+}

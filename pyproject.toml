@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-content-labeling-checker"
+version = "0.1.0"
+description = "AI 生成合成内容标识合规核查器：以《标识办法》+ 强制国标 GB 45438-2025 为规则源，做显式/隐式标识核验、批量扫描与合规证据链（全本地、零上传）"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "yuluo554" }]
+keywords = [
+    "ai-generated-content",
+    "content-labeling",
+    "compliance",
+    "gb45438",
+    "metadata-verification",
+    "chinese-regulation",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Legal Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+]
+# 核心层零第三方依赖（架构纪律，见 plan/03）：全部重件走 extras。
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "pyyaml"]
+report = ["openpyxl"]
+gui = ["PySide6"]
+pkg = ["pyinstaller"]
+
+[project.scripts]
+labelcheck = "labelcheck.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/yuluo554/ai-content-labeling-checker"
+Source = "https://github.com/yuluo554/ai-content-labeling-checker"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = ["error::DeprecationWarning:labelcheck.*"]

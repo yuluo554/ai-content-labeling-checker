@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "_comment": "元数据字段映射表：容器/元数据键 → 国标字段。M0 为占位骨架（全部 status=pending）；M1 须以 GB 45438-2025 原文核对字段名/别名/类型/取值后转 verified。aliases 顺序敏感（归一取声明序最先命中者）。",
+  "profiles": {
+    "generic_metadata": [
+      "content.property",
+      "service.provider.name",
+      "service.provider.code",
+      "content.id"
+    ]
+  },
+  "fields": [
+    {
+      "national_field": "content_property",
+      "label": "生成合成内容属性信息",
+      "aliases": [
+        "content.property",
+        "ai.property",
+        "AIGC:Property"
+      ],
+      "status": "pending",
+      "source_url": "https://openstd.samr.gov.cn/",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "生成合成内容属性信息字段（字段名与取值枚举待以标准原文核对）"
+      }
+    },
+    {
+      "national_field": "service_provider_name",
+      "label": "服务提供者名称",
+      "aliases": [
+        "service.provider.name",
+        "ServiceProvider",
+        "XMP:CreatorTool"
+      ],
+      "status": "pending",
+      "source_url": "https://openstd.samr.gov.cn/",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "服务提供者名称字段（字段名与类型待以标准原文核对）"
+      }
+    },
+    {
+      "national_field": "service_provider_code",
+      "label": "服务提供者编码",
+      "aliases": [
+        "service.provider.code",
+        "ServiceProviderCode"
+      ],
+      "status": "pending",
+      "source_url": "https://openstd.samr.gov.cn/",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "服务提供者编码字段（格式要求待以标准原文核对）"
+      }
+    },
+    {
+      "national_field": "content_id",
+      "label": "内容制作编号",
+      "aliases": [
+        "content.id",
+        "ContentID",
+        "XMP:InstanceID"
+      ],
+      "status": "pending",
+      "source_url": "https://openstd.samr.gov.cn/",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "内容制作编号字段（字段名与格式待以标准原文核对）"
+      }
+    }
+  ]
+}

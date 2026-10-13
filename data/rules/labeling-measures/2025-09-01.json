@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "doc_id": "labeling-measures",
+  "version": "2025-09-01",
+  "_status": "pending",
+  "_comment": "《人工智能生成合成内容标识办法》核查规则骨架。全部条目 status=pending —— M1 须逐条挂办法原文条号与出处后方可转 verified 进入判定路径。此处字段/位置取值为占位骨架，不得作为合规口径引用。",
+  "rules": [
+    {
+      "rule_id": "measures:explicit:text.service.provider.notice",
+      "scope": "explicit",
+      "carrier": ["text"],
+      "target": "text_service_provider_notice",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "服务提供者应当对生成合成内容添加显式标识（要点待核对）"
+      },
+      "status": "pending",
+      "source_url": "https://www.cac.gov.cn/",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:explicit:text.reader.notice.position",
+      "scope": "explicit",
+      "carrier": ["text"],
+      "target": "text_reader_notice",
+      "check_type": "position",
+      "params": {
+        "allowed": ["head", "tail", "interleaved"]
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": ["text"]
+      },
+      "clause": {
+        "article": "待核对",
+        "excerpt": "文本内容应在起始、结尾或适当位置添加提示（位置枚举取值待以原文核对）"
+      },
+      "status": "pending",
+      "source_url": "https://www.cac.gov.cn/",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:implicit:service.provider.name",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "service_provider_name",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "隐式标识应含服务提供者名称（字段名以标准原文为准）"
+      },
+      "status": "pending",
+      "source_url": "https://www.cac.gov.cn/",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:implicit:service.provider.code",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "service_provider_code",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "clause": {
+        "article": "待核对",
+        "excerpt": "隐式标识应含服务提供者编码（字段名与格式以标准原文为准）"
+      },
+      "status": "pending",
+      "source_url": "https://www.cac.gov.cn/",
+      "verified_at": null
+    }
+  ]
+}

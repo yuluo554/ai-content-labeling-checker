@@ -1,0 +1,31 @@
+{
+  "card_id": "SAMPLE-TEXT-0001",
+  "carrier": "text",
+  "source": "manual",
+  "content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "explicit": [
+    {
+      "element": "text_service_provider_notice",
+      "present": true,
+      "position": "head",
+      "text_excerpt": "本内容由人工智能生成合成（示例摘录）"
+    },
+    {
+      "element": "text_lead_notice",
+      "present": true,
+      "position": "head"
+    },
+    {
+      "element": "text_reader_notice",
+      "present": true,
+      "position": "head"
+    }
+  ],
+  "implicit": {
+    "content.property": "AI_GENERATED",
+    "service.provider.name": "示例提供者（虚构）",
+    "service.provider.code": "SYN-0001",
+    "content.id": "SYN-CONTENT-000001"
+  },
+  "notes": "全要素齐备的示例件：用于演示 check 通路与 README 快速开始（内容完全虚构）"
+}
