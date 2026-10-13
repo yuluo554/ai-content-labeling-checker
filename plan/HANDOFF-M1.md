@@ -44,7 +44,7 @@ cli/             main.py（check / selfcheck / version 已实现；scan→M3、b
 - `mapping/national-fields.json`：4 个国标字段，全 `pending`。
 - `samples/`：2 张示例标识卡（含"元数据被剥离但显式标识在"边界件）。
 
-**测试（`tests/`，158 项全绿，3.8 与 3.12 双通过）**
+**测试（`tests/`，160 项全绿，3.8 与 3.12 双通过）**
 
 `test_infra.py` `test_rules_gate.py` `test_mapping.py` `test_model.py` `test_engine_explicit.py`
 `test_engine_implicit.py` `test_engine_integrity.py` `test_cli.py` `test_guard_imports.py`
@@ -106,7 +106,7 @@ cli/             main.py（check / selfcheck / version 已实现；scan→M3、b
 - [x] 显式/隐式/完整性三核验器 + 端到端编排（CLI 与未来 GUI 共用）
 - [x] CLI `check`/`selfcheck`/`version` 实跑通过；`scan`/`bench` 显式未实现桩（exit 2）
 - [x] 退出码 0/1/2/3 逐码测试锁死
-- [x] 测试 **158 项全绿**（Python 3.8.8 与 3.12 双通过），含失败路径
+- [x] 测试 **160 项全绿**（Python 3.8.8 与 3.12 双通过），含失败路径
 - [x] 守门测试：EOL+阳性对照 / splitmix64 金标准 / 门控 / AST import / 零政策字面量 / 无时钟 / CI workflow 可解析（含"冒号+空格"阳性对照）+ `fetch-depth: 0`
 - [x] CI 三矩阵配置 + 本地 YAML 可解析校验通过
 - [x] 数据骨架全 `pending`，门控行为经 CLI 实测可观测（`not_assessed`）

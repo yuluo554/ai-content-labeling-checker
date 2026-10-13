@@ -38,10 +38,9 @@ def test_splitmix64_different_seeds_diverge():
 def test_splitmix64_randbelow_in_range_and_deterministic():
     rng = SplitMix64(7)
     values = [rng.randbelow(10) for _ in range(200)]
-    assert all(0 <= v < 10 for v in values)
-    assert values == [SplitMix64(7).randbelow(10) for _ in range(200)] or True
+    assert all(0 <= v < 10 for v in values), "取值必须落在 [0, bound)"
     again = SplitMix64(7)
-    assert [again.randbelow(10) for _ in range(200)] == values
+    assert [again.randbelow(10) for _ in range(200)] == values, "同 seed 序列必须一致"
 
 
 def test_splitmix64_choice_and_shuffle_deterministic():
@@ -161,11 +160,19 @@ def test_find_data_dir_repo_default_is_repo_data(repo_root):
     assert resolved == (repo_root / "data").resolve()
 
 
-def test_find_data_dir_require_false_returns_none(tmp_path, monkeypatch):
-    monkeypatch.setenv(ENV_VAR, str(tmp_path / "nope"))
-    # 环境变量指向不存在目录 → require=False 时回到其它分支；这里用显式不存在路径
-    result = find_data_dir(explicit=None, require=False)
-    assert result is None or result.exists()
+def test_find_data_dir_require_false_returns_none_when_nothing_found(tmp_path, monkeypatch):
+    """定位失败且 require=False → 返回 None（供 version 等可降级命令使用）。"""
+    import labelcheck.paths as paths_mod
+
+    monkeypatch.delenv(ENV_VAR, raising=False)
+    # 屏蔽仓库态与冻结态候选，模拟"什么都没有"的环境
+    monkeypatch.setattr(paths_mod, "_frozen_candidates", lambda: [])
+    monkeypatch.setattr(paths_mod, "_source_candidates", lambda: [])
+    monkeypatch.setattr(paths_mod, "_cwd_candidates", lambda: [])
+
+    assert find_data_dir(require=False) is None
+    with pytest.raises(EnvironmentError_):
+        find_data_dir(require=True)
 
 
 def test_frozen_candidate_branch_used_when_meipass_set(tmp_path, monkeypatch):
