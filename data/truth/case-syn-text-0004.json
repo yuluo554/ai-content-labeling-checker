@@ -1,0 +1,35 @@
+{
+  "input_card": {
+    "card_id": "SYN-TEXT-0004",
+    "carrier": "text",
+    "source": "synthetic",
+    "content_sha256": "a4ff6f6beff74c2bc55d3eecb6728b2be783b47c152e5f7d71d3271c355eedee",
+    "explicit": [
+      {
+        "element": "text_explicit_notice",
+        "present": true,
+        "position": "head",
+        "value": "本内容由人工智能生成合成"
+      }
+    ],
+    "implicit": {
+      "AIGC:Label": "9",
+      "AIGC:ContentProducer": "SYN-0001",
+      "AIGC:ProduceID": "SYN-C120797"
+    },
+    "notes": "注入：生成合成标签取值 9（附录 E 允许 1/2/3），minor 级枚举规则 fail（内容完全虚构）"
+  },
+  "expected": {
+    "grade": "partial",
+    "also_expect": {
+      "implicit_fail_targets": [
+        "content_property"
+      ],
+      "explicit_fail_targets": []
+    },
+    "injected": {
+      "defect": "wrong_value",
+      "field": "content_property"
+    }
+  }
+}

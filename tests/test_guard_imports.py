@@ -169,3 +169,101 @@ def test_all_declared_python_files_are_parseable():
     """全部源码必须能被 AST 解析（语法/编码问题的早期拦截）。"""
     for path in _iter_py_files():
         ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+
+
+# ------------------------------------------------------------------ M3 追加守门
+def test_scan_and_report_modules_do_not_import_openpyxl_at_top_level():
+    """``openpyxl`` 只能在函数体内**惰性导入**——否则无 report extra 的环境连 CLI 都跑不起来。
+
+    ``scan/`` 与 ``report/`` 是 M3 新模块；``report`` 允许用第三方重件（在
+    ``ALLOWED_THIRD_PARTY_MODULES`` 内），但**顶层**导入会让 ``import labelcheck.report``
+    在没有 openpyxl 的机器上直接失败——与"缺失降级为 CSV，exit 0 不崩"（plan/04 §八.2）矛盾。
+    """
+    violations = []
+    for sub in ("scan", "report"):
+        for path in sorted((SRC / sub).rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            for module_name, lineno in _top_level_imports(tree):
+                if module_name.split(".")[0] == "openpyxl":
+                    violations.append("{0}:{1}".format(_rel(path), lineno))
+    assert not violations, (
+        "openpyxl 出现在模块顶层（须在函数体内惰性导入，缺失时降级 CSV）：\n"
+        + "\n".join(violations))
+
+
+def test_scan_module_has_no_third_party_top_level_imports():
+    """``scan/`` 不在豁免名单内 → 必须零第三方（纯 stdlib）。"""
+    violations = []
+    for path in sorted((SRC / "scan").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for module_name, lineno in _top_level_imports(tree):
+            if _module_is_third_party(module_name):
+                violations.append("{0}:{1} imports {2}".format(_rel(path), lineno, module_name))
+    assert not violations, "scan 模块出现第三方顶层依赖：\n" + "\n".join(violations)
+
+
+# ------------------------------------------------------------------ M4 追加守门
+def test_benchmark_module_has_no_third_party_top_level_imports():
+    """``benchmark/`` 不在豁免名单内 → 必须零第三方（纯规则通路，FR-11）。"""
+    violations = []
+    for path in sorted((SRC / "benchmark").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for module_name, lineno in _top_level_imports(tree):
+            if _module_is_third_party(module_name):
+                violations.append("{0}:{1} imports {2}".format(_rel(path), lineno, module_name))
+    assert not violations, "benchmark 模块出现第三方顶层依赖：\n" + "\n".join(violations)
+
+
+def test_benchmark_module_uses_no_system_clock_or_random():
+    """基准可复现前提：``benchmark/`` 不得调用系统时钟或 stdlib ``random``。
+
+    （``test_no_stdlib_random_in_generators_or_core`` 已覆盖 ``random`` 的 import；
+    此处补 ``datetime.now``/``time.time`` 这类**调用**，与引擎同一条确定性纪律。）
+    """
+    forbidden = ("datetime.now(", "datetime.today()", "time.time()", "utcnow(")
+    violations = []
+    for path in sorted((SRC / "benchmark").rglob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        for token in forbidden:
+            if token in text:
+                violations.append("{0} 含 {1}".format(_rel(path), token))
+    assert not violations, "基准源码使用系统时钟（产物将不可复现）：\n" + "\n".join(violations)
+
+
+# ------------------------------------------------------------------ M5 追加守门
+def test_packaging_module_has_no_pyinstaller_top_level_import():
+    """``packaging/`` 顶层不得 import PyInstaller——否则无 pkg extra 的环境连
+    ``import labelcheck.packaging``（及其测试）都跑不起来。
+
+    PyInstaller 只出现在 ``tools/*.spec`` 与 ``tools/build_exe.py`` 里。
+    """
+    violations = []
+    for path in sorted((SRC / "packaging").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for module_name, lineno in _top_level_imports(tree):
+            if module_name.split(".")[0] == "PyInstaller":
+                violations.append("{0}:{1}".format(_rel(path), lineno))
+    assert not violations, "packaging 顶层 import 了 PyInstaller：\n" + "\n".join(violations)
+
+
+def test_packaging_module_has_no_third_party_top_level_imports():
+    """``packaging/`` 不在第三方豁免名单内 → 必须零第三方顶层依赖。"""
+    violations = []
+    for path in sorted((SRC / "packaging").rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for module_name, lineno in _top_level_imports(tree):
+            if _module_is_third_party(module_name):
+                violations.append("{0}:{1} imports {2}".format(_rel(path), lineno, module_name))
+    assert not violations, "packaging 模块出现第三方顶层依赖：\n" + "\n".join(violations)
+
+
+def test_gui_service_layer_has_no_third_party_top_level_imports():
+    """``gui/services.py`` 与 ``gui/format.py`` 顶层零第三方（无 PySide6 也能导入）。"""
+    violations = []
+    for name in ("services.py", "format.py"):
+        path = SRC / "gui" / name
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for module_name, lineno in _top_level_imports(tree):
+            if _module_is_third_party(module_name):
+                violations.append("{0}:{1} imports {2}".format(_rel(path), lineno, module_name))
+    assert not violations, "GUI 服务层出现第三方顶层依赖：\n" + "\n".join(violations)

@@ -42,12 +42,21 @@ class FieldMapping(object):
 
 
 class MappingTable(object):
-    """字段映射表（含版本与文档坐标）。"""
+    """字段映射表（含版本、容器画像与解析画像）。"""
 
-    def __init__(self, fields, schema_version=1, warnings=None):
+    def __init__(self, fields, schema_version=1, warnings=None, profiles=None,
+                 parse_profile=None):
         self.fields = list(fields)
         self.schema_version = schema_version
         self.warnings = list(warnings) if warnings else []
+        self.profiles = dict(profiles) if profiles else {}
+        self.parse_profile = dict(parse_profile) if parse_profile else {}
+
+    @property
+    def payload_wrapper(self):
+        """隐式标识 JSON 载荷的外层包裹键（附录 E b)；无配置则返回空串。"""
+        value = self.parse_profile.get("payload_wrapper", "")
+        return value if isinstance(value, str) else ""
 
     def __len__(self):
         return len(self.fields)
@@ -85,6 +94,17 @@ class Resolution(object):
     @property
     def found(self):
         return self.matched_key is not None
+
+    @property
+    def all_matched_keys(self):
+        """该要素命中的**全部**容器键（声明序；命中键 = 主键 + 其余别名）。
+
+        用于 ``unique`` 校验（GB 45438-2025 §6.1 c)：同一要素被多个容器键同时提供
+        = 隐式标识被重复保留，不合规。
+        """
+        if self.matched_key is None:
+            return []
+        return [self.matched_key] + list(self.alternatives)
 
     def to_dict(self):
         return {
@@ -154,7 +174,12 @@ def load_mapping_table(data_dir):
             clause=raw.get("clause", {}),
         ))
 
-    return MappingTable(fields, schema_version=data.get("schema_version", 1))
+    return MappingTable(
+        fields,
+        schema_version=data.get("schema_version", 1),
+        profiles=data.get("profiles", {}) or {},
+        parse_profile=data.get("parse_profile", {}) or {},
+    )
 
 
 def resolve_fields(implicit, table):

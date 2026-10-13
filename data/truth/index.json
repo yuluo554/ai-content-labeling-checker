@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "_comment": "合成样本算例索引（冻结产物，由 tools/gen_samples.py 生成，禁手改）。内容全部虚构；seed 固定 → 重生成逐字节一致。",
+  "seed": 45438,
+  "cases": [
+    {
+      "case_id": "SYN-TEXT-0001",
+      "carrier": "text",
+      "file": "case-syn-text-0001.json",
+      "injected": {
+        "defect": "correct",
+        "field": null
+      },
+      "expected_grade": "compliant"
+    },
+    {
+      "case_id": "SYN-TEXT-0002",
+      "carrier": "text",
+      "file": "case-syn-text-0002.json",
+      "injected": {
+        "defect": "missing_field",
+        "field": "content_property"
+      },
+      "expected_grade": "non_compliant"
+    },
+    {
+      "case_id": "SYN-TEXT-0003",
+      "carrier": "text",
+      "file": "case-syn-text-0003.json",
+      "injected": {
+        "defect": "wrong_position",
+        "field": "text_explicit_notice"
+      },
+      "expected_grade": "partial"
+    },
+    {
+      "case_id": "SYN-TEXT-0004",
+      "carrier": "text",
+      "file": "case-syn-text-0004.json",
+      "injected": {
+        "defect": "wrong_value",
+        "field": "content_property"
+      },
+      "expected_grade": "partial"
+    },
+    {
+      "case_id": "SYN-TEXT-0005",
+      "carrier": "text",
+      "file": "case-syn-text-0005.json",
+      "injected": {
+        "defect": "bad_format",
+        "field": "content_producer"
+      },
+      "expected_grade": "partial"
+    },
+    {
+      "case_id": "SYN-IMAGE-0006",
+      "carrier": "image",
+      "file": "case-syn-image-0006.json",
+      "injected": {
+        "defect": "metadata_stripped",
+        "field": null
+      },
+      "expected_grade": "non_compliant"
+    },
+    {
+      "case_id": "SYN-TEXT-0007",
+      "carrier": "text",
+      "file": "case-syn-text-0007.json",
+      "injected": {
+        "defect": "explicit_only",
+        "field": "content_id"
+      },
+      "expected_grade": "partial"
+    },
+    {
+      "case_id": "SYN-IMAGE-0008",
+      "carrier": "image",
+      "file": "case-syn-image-0008.json",
+      "injected": {
+        "defect": "wrong_position",
+        "field": "image_explicit_notice"
+      },
+      "expected_grade": "partial"
+    }
+  ]
+}

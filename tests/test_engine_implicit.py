@@ -158,3 +158,68 @@ def test_pending_implicit_rules_do_not_run(run):
     )
     assert report.implicit == []
     assert report.grade == GRADE_NOT_ASSESSED
+
+
+# ------------------------------------------------------------------ unique（§6.1 c)）
+UNIQUE_FIELDS = [
+    make_mapping_field("content_property", ["AIGC:Label", "AIGC.Label"], status="verified"),
+    make_mapping_field("content_producer", ["AIGC:ContentProducer"], status="verified"),
+]
+
+
+def test_unique_passes_when_each_element_provided_once(run):
+    report = run(
+        [make_rule("r-uniq", scope="implicit", target="content_property",
+                   check_type="unique", status="verified", severity="major")],
+        mapping_fields=UNIQUE_FIELDS,
+        implicit={"AIGC:Label": "1", "AIGC:ContentProducer": "SYN-0001"},
+    )
+    assert report.implicit[0].status == "pass"
+
+
+def test_unique_fails_when_element_provided_twice(run):
+    """同一要素经两个容器键提供 → 隐式标识重复保留 → fail（§6.1 c)）。"""
+    report = run(
+        [make_rule("r-uniq", scope="implicit", target="content_property",
+                   check_type="unique", status="verified", severity="major")],
+        mapping_fields=UNIQUE_FIELDS,
+        implicit={"AIGC:Label": "1", "AIGC.Label": "1"},
+    )
+    finding = report.implicit[0]
+    assert finding.status == "fail"
+    assert finding.code == "duplicate_implicit_label"
+    assert finding.evidence["duplicated"]
+
+
+def test_unique_fails_when_container_key_repeated(run):
+    """同一容器键在解析时被观测到重复出现（字典形态看不出）→ 据实登记后判 fail。"""
+    report = run(
+        [make_rule("r-uniq", scope="implicit", target="content_property",
+                   check_type="unique", status="verified", severity="major")],
+        mapping_fields=UNIQUE_FIELDS,
+        implicit={"AIGC:Label": "1", "AIGC:ContentProducer": "SYN-0001"},
+        implicit_duplicate_keys=["AIGC:Label"],
+    )
+    assert report.implicit[0].status == "fail"
+
+
+def test_unique_unknown_when_nothing_observed(run):
+    report = run(
+        [make_rule("r-uniq", scope="implicit", target="content_property",
+                   check_type="unique", status="verified", severity="major")],
+        mapping_fields=UNIQUE_FIELDS,
+        implicit={},
+    )
+    finding = report.implicit[0]
+    assert finding.status == "unknown"
+    assert finding.code == "field_absent_cannot_verify"
+
+
+def test_unique_check_type_cannot_go_through_evaluate():
+    """unique 需整块上下文，evaluate() 必须显式拒绝（防误用）。"""
+    from labelcheck.errors import RulesetError
+    from labelcheck.rules.rule import Rule, evaluate
+
+    rule = Rule("r", "implicit", "content_property", "unique", status="verified")
+    with pytest.raises(RulesetError):
+        evaluate(rule, "x")

@@ -86,7 +86,7 @@ cli/             main.py（check / selfcheck / version 已实现；scan→M3、b
 
 ## 四、本机环境事实与坑（只写实测过的）
 
-- 解释器：`py -0p` → **3.8.8**（`C:\Users\ASUS\AppData\Local\Programs\Python\Python38`）与 **3.12**。
+- 解释器：`py -0p` → **3.8.8**（位于本机用户目录下的 `AppData\Local\Programs\Python\Python38`）与 **3.12**。
   Windows 上 `python` 是商店占位符，**一律用 `py`**；跑命令加 `-X utf8`（中文控制台）。
 - **Git Bash 的 `/tmp` 与 Windows Python 不互通**：写临时文件用 Python 自己的 `tempfile`，或工作区相对路径（实测踩过：`/tmp/x.yml` 用 `py` 读会 `FileNotFoundError`）。
 - 跑测试（无需安装）：`PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src py -X utf8 -m pytest tests/ -q`。

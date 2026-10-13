@@ -1,0 +1,34 @@
+{
+  "input_card": {
+    "card_id": "SYN-TEXT-0007",
+    "carrier": "text",
+    "source": "synthetic",
+    "content_sha256": "3f170e5d964de061cad12b0d212ea02539c7691c596870c595c2b72476e5dc1d",
+    "explicit": [
+      {
+        "element": "text_explicit_notice",
+        "present": true,
+        "position": "head",
+        "value": "本内容由人工智能生成合成"
+      }
+    ],
+    "implicit": {
+      "AIGC:Label": "1",
+      "AIGC:ContentProducer": "SYN-0001"
+    },
+    "notes": "注入：显式齐全，隐式仅缺“内容制作编号”（minor）→ partial（内容完全虚构）"
+  },
+  "expected": {
+    "grade": "partial",
+    "also_expect": {
+      "implicit_fail_targets": [
+        "content_id"
+      ],
+      "explicit_fail_targets": []
+    },
+    "injected": {
+      "defect": "explicit_only",
+      "field": "content_id"
+    }
+  }
+}

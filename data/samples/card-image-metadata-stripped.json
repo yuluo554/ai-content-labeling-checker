@@ -2,12 +2,13 @@
   "card_id": "SAMPLE-IMAGE-METADATA-STRIPPED-0002",
   "carrier": "image",
   "source": "synthetic",
-  "content_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "content_sha256": "29ff4b3a79720c3cd923ee6ec1a81ec127d18e6c615ab433f46896d254d79c28",
   "explicit": [
     {
-      "element": "image_visible_notice",
+      "element": "image_explicit_notice",
       "present": true,
-      "position": "corner"
+      "position": "corner",
+      "value": "本内容由人工智能生成合成"
     }
   ],
   "implicit": {},

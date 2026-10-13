@@ -2,69 +2,413 @@
   "schema_version": 1,
   "doc_id": "gb45438-2025",
   "version": "2025-09-01",
-  "_status": "pending",
-  "_comment": "GB 45438-2025《网络安全技术 人工智能生成合成内容标识方法》核查规则骨架。全部条目 status=pending —— M1 须以标准原文逐字核对隐式标识字段清单（字段名/类型/取值）与显式标识位置形式要求，挂条号与出处后方可转 verified。此处取值均为占位骨架，不得作为合规口径引用。",
   "rules": [
     {
-      "rule_id": "gb45438:explicit:text.lead_notice.position",
+      "rule_id": "gb45438:explicit:text.notice.presence",
       "scope": "explicit",
-      "carrier": ["text"],
-      "target": "text_lead_notice",
-      "check_type": "position",
-      "params": {
-        "allowed": ["head", "tail", "interleaved"]
-      },
-      "severity": "major",
-      "only_if": {
-        "carrier": ["text"]
-      },
-      "clause": {
-        "article": "待核对",
-        "excerpt": "文本内容显式标识的位置要求（起始/结尾/适当位置，取值待以原文核对）"
-      },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
-    },
-    {
-      "rule_id": "gb45438:explicit:image.notice.position",
-      "scope": "explicit",
-      "carrier": ["image"],
-      "target": "image_visible_notice",
-      "check_type": "position",
-      "params": {
-        "allowed": ["corner", "center", "edge"]
-      },
-      "severity": "major",
-      "only_if": {
-        "carrier": ["image"]
-      },
-      "clause": {
-        "article": "待核对",
-        "excerpt": "图片显式标识应在显著位置（位置枚举取值待以原文核对）"
-      },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
-    },
-    {
-      "rule_id": "gb45438:explicit:av.lead_notice.presence",
-      "scope": "explicit",
-      "carrier": ["audio", "video"],
-      "target": "av_lead_notice",
+      "carrier": [
+        "text"
+      ],
+      "target": "text_explicit_notice",
       "check_type": "presence",
       "params": {},
       "severity": "major",
       "only_if": {
-        "carrier": ["audio", "video"]
+        "carrier": [
+          "text"
+        ]
       },
       "clause": {
-        "article": "待核对",
-        "excerpt": "音视频起始提示要求（提示形式与时长要求待以原文核对）"
+        "article": "5.1 a)",
+        "excerpt": "文本内容显式标识应采用文字或角标形式并具备标识"
       },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:text.notice.position",
+      "scope": "explicit",
+      "carrier": [
+        "text"
+      ],
+      "target": "text_explicit_notice",
+      "check_type": "position",
+      "params": {
+        "allowed": [
+          "head",
+          "tail",
+          "middle"
+        ]
+      },
+      "severity": "minor",
+      "only_if": {
+        "carrier": [
+          "text"
+        ]
+      },
+      "clause": {
+        "article": "5.1 d)",
+        "excerpt": "文本内容显式标识应位于文本的起始位置、末尾位置或中间适当位置之一或多个"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:text.notice.ai_element",
+      "scope": "explicit",
+      "carrier": [
+        "text"
+      ],
+      "target": "text_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(人工智能|AI).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "text"
+        ]
+      },
+      "clause": {
+        "article": "5.1 b) 1)",
+        "excerpt": "文本内容显式标识应含人工智能要素：包含“人工智能”或“AI”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:text.notice.gen_element",
+      "scope": "explicit",
+      "carrier": [
+        "text"
+      ],
+      "target": "text_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(生成|合成).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "text"
+        ]
+      },
+      "clause": {
+        "article": "5.1 b) 2)",
+        "excerpt": "文本内容显式标识应含生成合成要素：包含“生成”和/或“合成”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:image.notice.presence",
+      "scope": "explicit",
+      "carrier": [
+        "image"
+      ],
+      "target": "image_explicit_notice",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "image"
+        ]
+      },
+      "clause": {
+        "article": "5.2 a)",
+        "excerpt": "图片内容显式标识应采用文字提示并具备标识"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:image.notice.position",
+      "scope": "explicit",
+      "carrier": [
+        "image"
+      ],
+      "target": "image_explicit_notice",
+      "check_type": "position",
+      "params": {
+        "allowed": [
+          "edge",
+          "corner"
+        ]
+      },
+      "severity": "minor",
+      "only_if": {
+        "carrier": [
+          "image"
+        ]
+      },
+      "clause": {
+        "article": "5.2 c)",
+        "excerpt": "图片内容显式标识应位于图片的边或角"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:image.notice.ai_element",
+      "scope": "explicit",
+      "carrier": [
+        "image"
+      ],
+      "target": "image_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(人工智能|AI).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "image"
+        ]
+      },
+      "clause": {
+        "article": "5.2 b) 1)",
+        "excerpt": "图片内容显式标识应含人工智能要素：包含“人工智能”或“AI”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:image.notice.gen_element",
+      "scope": "explicit",
+      "carrier": [
+        "image"
+      ],
+      "target": "image_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(生成|合成).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "image"
+        ]
+      },
+      "clause": {
+        "article": "5.2 b) 2)",
+        "excerpt": "图片内容显式标识应含生成合成要素：包含“生成”和/或“合成”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:audio.notice.presence",
+      "scope": "explicit",
+      "carrier": [
+        "audio"
+      ],
+      "target": "audio_explicit_notice",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "audio"
+        ]
+      },
+      "clause": {
+        "article": "5.3 a)",
+        "excerpt": "音频内容显式标识应采用语音标识或音频节奏标识并具备标识"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:audio.notice.position",
+      "scope": "explicit",
+      "carrier": [
+        "audio"
+      ],
+      "target": "audio_explicit_notice",
+      "check_type": "position",
+      "params": {
+        "allowed": [
+          "head",
+          "tail",
+          "middle"
+        ]
+      },
+      "severity": "minor",
+      "only_if": {
+        "carrier": [
+          "audio"
+        ]
+      },
+      "clause": {
+        "article": "5.3 d)",
+        "excerpt": "音频内容显式标识应位于音频的起始位置、末尾位置或中间适当位置之一或多个"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:audio.notice.ai_element",
+      "scope": "explicit",
+      "carrier": [
+        "audio"
+      ],
+      "target": "audio_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(人工智能|AI).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "audio"
+        ]
+      },
+      "clause": {
+        "article": "5.3 b) 1)",
+        "excerpt": "音频内容显式标识应含人工智能要素：包含“人工智能”或“AI”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:audio.notice.gen_element",
+      "scope": "explicit",
+      "carrier": [
+        "audio"
+      ],
+      "target": "audio_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(生成|合成).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "audio"
+        ]
+      },
+      "clause": {
+        "article": "5.3 b) 2)",
+        "excerpt": "音频内容显式标识应含生成合成要素：包含“生成”和/或“合成”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:video.notice.presence",
+      "scope": "explicit",
+      "carrier": [
+        "video"
+      ],
+      "target": "video_explicit_notice",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "video"
+        ]
+      },
+      "clause": {
+        "article": "5.4 a)",
+        "excerpt": "视频内容显式标识应采用文字提示并具备标识"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:video.notice.position",
+      "scope": "explicit",
+      "carrier": [
+        "video"
+      ],
+      "target": "video_explicit_notice",
+      "check_type": "position",
+      "params": {
+        "allowed": [
+          "head",
+          "tail",
+          "middle"
+        ]
+      },
+      "severity": "minor",
+      "only_if": {
+        "carrier": [
+          "video"
+        ]
+      },
+      "clause": {
+        "article": "5.4 c)",
+        "excerpt": "视频内容显式标识应位于视频起始画面，可位于视频末尾和中间适当位置"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:video.notice.ai_element",
+      "scope": "explicit",
+      "carrier": [
+        "video"
+      ],
+      "target": "video_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(人工智能|AI).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "video"
+        ]
+      },
+      "clause": {
+        "article": "5.4 b) 1)",
+        "excerpt": "视频内容显式标识应含人工智能要素：包含“人工智能”或“AI”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:explicit:video.notice.gen_element",
+      "scope": "explicit",
+      "carrier": [
+        "video"
+      ],
+      "target": "video_explicit_notice",
+      "check_type": "pattern",
+      "params": {
+        "regex": ".*(生成|合成).*"
+      },
+      "severity": "major",
+      "only_if": {
+        "carrier": [
+          "video"
+        ]
+      },
+      "clause": {
+        "article": "5.4 b) 2)",
+        "excerpt": "视频内容显式标识应含生成合成要素：包含“生成”和/或“合成”"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
     },
     {
       "rule_id": "gb45438:implicit:content_property.presence",
@@ -74,47 +418,73 @@
       "check_type": "presence",
       "params": {},
       "severity": "critical",
+      "only_if": {},
       "clause": {
-        "article": "待核对",
-        "excerpt": "生成合成内容属性信息（隐式标识字段清单与取值枚举待以标准原文核对）"
+        "article": "6.1 a) 1)",
+        "excerpt": "文件元数据隐式标识应包括生成合成标签要素：内容的人工智能生成合成属性信息"
       },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
     },
     {
-      "rule_id": "gb45438:implicit:service_provider_name.presence",
+      "rule_id": "gb45438:implicit:content_property.enum",
       "scope": "implicit",
       "carrier": [],
-      "target": "service_provider_name",
+      "target": "content_property",
+      "check_type": "enum",
+      "params": {
+        "allowed": [
+          "1",
+          "2",
+          "3"
+        ]
+      },
+      "severity": "minor",
+      "only_if": {},
+      "clause": {
+        "article": "附录 E c) 1)",
+        "excerpt": "生成合成标签要素（Label）取值：1=属于、2=可能为、3=疑似为人工智能生成合成内容"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:implicit:content_producer.presence",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_producer",
       "check_type": "presence",
       "params": {},
       "severity": "major",
+      "only_if": {},
       "clause": {
-        "article": "待核对",
-        "excerpt": "服务提供者名称（字段名/类型/格式待以标准原文核对）"
+        "article": "6.1 a) 2)",
+        "excerpt": "文件元数据隐式标识应包括生成合成服务提供者要素：生成合成服务提供者的名称或编码"
       },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
     },
     {
-      "rule_id": "gb45438:implicit:service_provider_code.format",
+      "rule_id": "gb45438:implicit:content_producer.type",
       "scope": "implicit",
       "carrier": [],
-      "target": "service_provider_code",
-      "check_type": "pattern",
+      "target": "content_producer",
+      "check_type": "type",
       "params": {
-        "regex": "^[A-Za-z0-9-]{1,64}$"
+        "expect": "string"
       },
-      "severity": "major",
+      "severity": "minor",
+      "only_if": {},
       "clause": {
-        "article": "待核对",
-        "excerpt": "服务提供者编码格式（正则占位骨架，须以标准原文核对后替换）"
+        "article": "附录 E d) 2)",
+        "excerpt": "生成合成服务提供者要素（ContentProducer）类型为字符串"
       },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
     },
     {
       "rule_id": "gb45438:implicit:content_id.presence",
@@ -124,13 +494,93 @@
       "check_type": "presence",
       "params": {},
       "severity": "minor",
+      "only_if": {},
       "clause": {
-        "article": "待核对",
-        "excerpt": "内容制作编号（字段名与格式待以标准原文核对）"
+        "article": "6.1 a) 3)",
+        "excerpt": "文件元数据隐式标识应包括内容制作编号要素：生成合成服务提供者对该内容的唯一编号"
       },
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "verified_at": null
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:implicit:content_id.type",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_id",
+      "check_type": "type",
+      "params": {
+        "expect": "string"
+      },
+      "severity": "minor",
+      "only_if": {},
+      "clause": {
+        "article": "附录 E e) 2)",
+        "excerpt": "内容制作编号要素（ProduceID）类型为字符串"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:implicit:implicit_label.uniqueness",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_property",
+      "check_type": "unique",
+      "params": {},
+      "severity": "major",
+      "only_if": {},
+      "clause": {
+        "article": "6.1 c)",
+        "excerpt": "文件元数据隐式标识应仅保留一份（同一标识要素不得重复提供）"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:implicit:content_propagator.presence",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_propagator",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {
+        "scenario": [
+          "propagated"
+        ]
+      },
+      "clause": {
+        "article": "6.1 a) 4)",
+        "excerpt": "文件元数据隐式标识应含内容传播服务提供者的名称或编码（传播场景适用）"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "gb45438:implicit:propagate_id.presence",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "propagate_id",
+      "check_type": "presence",
+      "params": {},
+      "severity": "minor",
+      "only_if": {
+        "scenario": [
+          "propagated"
+        ]
+      },
+      "clause": {
+        "article": "6.1 a) 5)",
+        "excerpt": "文件元数据隐式标识应含内容传播服务提供者对该内容的唯一编号（传播场景适用）"
+      },
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "verified_at": "2026-10-13"
     }
-  ]
+  ],
+  "_comment": "GB 45438-2025《网络安全技术 人工智能生成合成内容标识方法》核查规则（冻结产物，由 tools/gen_rulesets.py 生成，禁手改）。条款见 §5.1–5.4（显式）、§6.1 与规范性附录 E（隐式）。"
 }

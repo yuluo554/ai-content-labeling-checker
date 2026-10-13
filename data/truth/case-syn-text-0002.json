@@ -1,0 +1,34 @@
+{
+  "input_card": {
+    "card_id": "SYN-TEXT-0002",
+    "carrier": "text",
+    "source": "synthetic",
+    "content_sha256": "806c00bebb32bb6c1454bf92b24792cf78f8dbf590a45eb75bc32eddbfc13aa8",
+    "explicit": [
+      {
+        "element": "text_explicit_notice",
+        "present": true,
+        "position": "head",
+        "value": "本内容由人工智能生成合成"
+      }
+    ],
+    "implicit": {
+      "AIGC:ContentProducer": "SYN-0001",
+      "AIGC:ProduceID": "SYN-C120797"
+    },
+    "notes": "注入：隐式标识缺“生成合成标签要素”（属性信息），critical 级缺失（内容完全虚构）"
+  },
+  "expected": {
+    "grade": "non_compliant",
+    "also_expect": {
+      "implicit_fail_targets": [
+        "content_property"
+      ],
+      "explicit_fail_targets": []
+    },
+    "injected": {
+      "defect": "missing_field",
+      "field": "content_property"
+    }
+  }
+}

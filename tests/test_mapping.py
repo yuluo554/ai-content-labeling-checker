@@ -98,12 +98,20 @@ def test_missing_mapping_file_raises(tmp_path):
         load_mapping_table(data)
 
 
-def test_shipped_mapping_table_is_gated(data_dir):
-    """M0 随附映射表全部 pending（M1 按原文核对后转 verified）。"""
+def test_shipped_mapping_table_is_content_verified(data_dir):
+    """M1 随附映射表：字段已按 GB 45438-2025 §6.1/附录 E 核对 → 全部 verified。
+
+    （归一算法与歧义检测由上方临时表用例锁死；此处只断言随附数据的核对状态。）
+    """
     table = load_mapping_table(data_dir)
-    assert len(table) >= 4
-    assert table.verified_field_count == 0
-    assert table.pending_field_count == len(table)
+    assert len(table) >= 5
+    assert table.verified_field_count == len(table)
+    assert table.pending_field_count == 0
+    # M1 口径修正：服务提供者要素为**单一字段**（名称或编码），不得再拆成 name/code 两个
+    names = [f.national_field for f in table]
+    assert "content_producer" in names
+    assert "service_provider_name" not in names
+    assert "service_provider_code" not in names
 
 
 def test_mapping_counts(tmp_path):

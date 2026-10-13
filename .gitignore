@@ -17,6 +17,10 @@ dist/
 output/
 reports/
 *.log
+# M3 报告导出与两轮对账的本地输出（含用户路径，不入仓）
+build-*/
+scan-out*/
+round*.json
 
 # 环境与密钥
 .env

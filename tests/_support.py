@@ -48,8 +48,8 @@ def make_mapping_field(national_field, aliases=None, status="pending", **overrid
 
 DEFAULT_MAPPING = [
     make_mapping_field("content_property", ["content.property"], status="verified"),
-    make_mapping_field("service_provider_name", ["service.provider.name"], status="verified"),
-    make_mapping_field("service_provider_code", ["service.provider.code"], status="verified"),
+    # M1 口径修正：服务提供者要素为**单一字段**（名称或编码），不再拆 name/code
+    make_mapping_field("content_producer", ["service.provider"], status="verified"),
     make_mapping_field("content_id", ["content.id"], status="verified"),
 ]
 

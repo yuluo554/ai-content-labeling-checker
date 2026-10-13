@@ -4,9 +4,10 @@
 
 **分级规则（定稿，无魔数）**：
 
-0. **无任何生效规则**（``findings`` 为空且无规则可施）→ ``not_assessed``。
-   这是"未核对不得生效"在**输出侧**的对应纪律：规则库条目全 ``pending`` 时，
-   工具必须说"没检查"而不是"合规"（**绝不输出假合规结论**）。
+0. **没有任何规则被实际施加**（无 Finding，**或**全部 Finding 都是 ``skipped``）
+   → ``not_assessed``。这是"未核对不得生效"在**输出侧**的对应纪律：规则库条目全
+   ``pending``，或当前载体/场景下没有一条规则适用，工具必须说"没检查"而不是
+   "合规"（**绝不输出假合规结论**）。
 1. 无 ``fail``：有 ``unknown`` → ``partial``（无明确违规但有待人工确认项）；
    否则 → ``compliant``。
 2. 有 ``fail``：存在 ``critical`` 或 ``major`` 级 fail → ``non_compliant``；
@@ -19,7 +20,7 @@
 
 from ..model import (
     GRADE_COMPLIANT, GRADE_NON_COMPLIANT, GRADE_NOT_ASSESSED, GRADE_PARTIAL,
-    SEVERITY_CRITICAL, SEVERITY_MAJOR,
+    SEVERITY_CRITICAL, SEVERITY_MAJOR, STATUS_SKIPPED,
 )
 
 #: 触发"不合规"的严重度（critical 或 major 任一条 fail 即成立）
@@ -45,14 +46,16 @@ def grade_findings(findings):
         - ``missing``：所有 ``fail`` 的 target（保序去重）
         - ``errors``：所有 ``fail`` 的 code（保序去重）
 
-    引擎不变量：**每条生效规则恰好产出一条 Finding**，故 ``findings`` 为空 ⟺
-    没有任何生效规则被施加 → ``not_assessed``。
+    引擎不变量：**每条适用的生效规则恰好产出一条 Finding**；不适用者产 ``skipped``。
+    故"被实际施加的规则"= 非 ``skipped`` 的 Finding；其为空 ⟺ 没有任何规则真正
+    检查过该件 → ``not_assessed``（**没检查 ≠ 合规**）。
     """
-    if not findings:
+    assessed = [f for f in findings if f.status != STATUS_SKIPPED]
+    if not assessed:
         return GRADE_NOT_ASSESSED, [], []
 
-    fails = [f for f in findings if f.status == "fail"]
-    unknowns = [f for f in findings if f.status == "unknown"]
+    fails = [f for f in assessed if f.status == "fail"]
+    unknowns = [f for f in assessed if f.status == "unknown"]
 
     missing = _ordered_unique([f.target for f in fails])
     errors = _ordered_unique([f.code for f in fails if f.code])

@@ -6,10 +6,13 @@
 import re
 
 from ..errors import RulesetError
-from ..model import STATUS_FAIL, STATUS_PASS, STATUS_UNKNOWN, Finding
+from ..model import SCENARIOS, STATUS_FAIL, STATUS_PASS, STATUS_UNKNOWN, Finding
 
-#: 支持的判定类型（契约见 plan/04 §三.3）
-CHECK_TYPES = ("presence", "position", "enum", "pattern", "type", "range")
+#: 支持的判定类型（契约见 plan/04 §三.3）。
+#: ``unique``（M2 新增）语义特殊：它要求**整个隐式标识块**的上下文（判断同一国标字段
+#: 是否被多份副本/多个别名键重复提供），故由 ``engine.implicit`` 直接判定，不经
+#: :func:`evaluate`。其依据为 GB 45438-2025 §6.1 c)「应仅保留一份文件元数据隐式标识」。
+CHECK_TYPES = ("presence", "position", "enum", "pattern", "type", "range", "unique")
 
 SCOPE_EXPLICIT = "explicit"
 SCOPE_IMPLICIT = "implicit"
@@ -55,6 +58,20 @@ class Rule(object):
         """载体门控：空列表 = 全部载体适用。"""
         return not self.carrier or carrier in self.carrier
 
+    @property
+    def scenarios(self):
+        """``only_if.scenario`` 声明的适用场景（空 = 全部场景适用，**默认口径**）。"""
+        return list(self.only_if.get("scenario") or [])
+
+    def applies_to_scenario(self, scenario):
+        """场景门控（适用性画像）：空列表 = 全部场景适用；否则须精确命中。
+
+        不适用 → 引擎记 ``skipped``（**不是 fail**）：办法第四条第二款（导出文件）与
+        第六条（传播平台提示）只对特定场景成立，把"不适用"判成"违规"是冤枉用户。
+        """
+        declared = self.scenarios
+        return not declared or scenario in declared
+
     def __repr__(self):
         return "Rule({0}, scope={1}, type={2}, status={3})".format(
             self.rule_id, self.scope, self.check_type, self.status
@@ -72,9 +89,17 @@ def evaluate(rule, observed):
     :param observed: 观测值；``None`` 表示缺失；显式要素的字典形态由调用方归一。
 
     判定语义严格按 plan/04 §三.3；**缺值不臆测**（非 presence 类一律 unknown）。
+
+    ``check_type="unique"`` 需要整个隐式标识块作为上下文（见 :data:`CHECK_TYPES`），
+    由 ``engine.implicit`` 直接判定——这里显式拒绝，避免调用方误用。
     """
     params = rule.params
     check_type = rule.check_type
+
+    if check_type == "unique":
+        raise RulesetError(
+            "check_type=unique 需整块上下文，须由 engine.implicit 判定（规则 {0}）".format(
+                rule.rule_id))
 
     if check_type == "presence":
         if observed is None or observed == "":
@@ -170,4 +195,5 @@ __all__ = [
     "Rule", "evaluate", "CHECK_TYPES", "SCOPES",
     "SCOPE_EXPLICIT", "SCOPE_IMPLICIT",
     "STATUS_VERIFIED", "STATUS_PENDING", "VERIFY_STATUSES",
+    "SCENARIOS",
 ]

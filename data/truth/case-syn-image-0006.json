@@ -1,0 +1,33 @@
+{
+  "input_card": {
+    "card_id": "SYN-IMAGE-0006",
+    "carrier": "image",
+    "source": "synthetic",
+    "content_sha256": "69e87a36192d59104df1331b3fc8c27312156f0dc6d8872dde0b9876c3239a58",
+    "explicit": [
+      {
+        "element": "image_explicit_notice",
+        "present": true,
+        "position": "corner",
+        "value": "本内容由人工智能生成合成"
+      }
+    ],
+    "implicit": {},
+    "notes": "边界情形：元数据被整体剥离但显式标识齐备——隐式含 critical 缺失 → non_compliant；显式仍全 pass（内容完全虚构）"
+  },
+  "expected": {
+    "grade": "non_compliant",
+    "also_expect": {
+      "implicit_fail_targets": [
+        "content_property",
+        "content_producer",
+        "content_id"
+      ],
+      "explicit_fail_targets": []
+    },
+    "injected": {
+      "defect": "metadata_stripped",
+      "field": null
+    }
+  }
+}

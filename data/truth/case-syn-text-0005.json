@@ -1,0 +1,35 @@
+{
+  "input_card": {
+    "card_id": "SYN-TEXT-0005",
+    "carrier": "text",
+    "source": "synthetic",
+    "content_sha256": "4ce894d67260ffeb84dc1afaa6b7dd1ce75655a48e8bca367524c9a7a8849f1a",
+    "explicit": [
+      {
+        "element": "text_explicit_notice",
+        "present": true,
+        "position": "head",
+        "value": "本内容由人工智能生成合成"
+      }
+    ],
+    "implicit": {
+      "AIGC:Label": "1",
+      "AIGC:ContentProducer": 12345,
+      "AIGC:ProduceID": "SYN-C120797"
+    },
+    "notes": "注入：服务提供者要素写成整数（附录 E 要求字符串），minor 级类型规则 fail（内容完全虚构）"
+  },
+  "expected": {
+    "grade": "partial",
+    "also_expect": {
+      "implicit_fail_targets": [
+        "content_producer"
+      ],
+      "explicit_fail_targets": []
+    },
+    "injected": {
+      "defect": "bad_format",
+      "field": "content_producer"
+    }
+  }
+}

@@ -13,8 +13,8 @@ from ..errors import RulesetError
 from ..jsonio import load_json, sha256_text, canonical_json
 from ..paths import SENTINEL  # noqa: F401  (保持 discoverable 语义一致)
 from .rule import (
-    Rule, CHECK_TYPES, SCOPES, VERIFY_STATUSES,
-    STATUS_VERIFIED, STATUS_PENDING,
+    Rule, CHECK_TYPES, SCOPES, VERIFY_STATUSES, SCENARIOS,
+    SCOPE_IMPLICIT, STATUS_VERIFIED, STATUS_PENDING,
 )
 
 REGISTRY_NAME = "registry.json"
@@ -49,6 +49,23 @@ class Ruleset(object):
             if r.scope == scope and r.applies_to_carrier(carrier)
         ]
 
+    def rules_for_card(self, scope, carrier, scenario):
+        """取适用于 scope × 载体 × **场景**的生效规则（适用性画像的单一查询点）。
+
+        场景不适用的条目仍要产出 ``skipped`` 判定（"为什么没查"必须可见），
+        故这里返回 ``(applicable, skipped)`` 两个列表，顺序均为加载顺序。
+        """
+        applicable = []
+        skipped = []
+        for rule in self.effective:
+            if rule.scope != scope or not rule.applies_to_carrier(carrier):
+                continue
+            if rule.applies_to_scenario(scenario):
+                applicable.append(rule)
+            else:
+                skipped.append(rule)
+        return applicable, skipped
+
     @property
     def verified_rule_count(self):
         return len(self.effective)
@@ -59,13 +76,23 @@ class Ruleset(object):
 
     @property
     def doc_versions(self):
-        """报告头用的文档坐标列表（顺序 = 加载顺序）。"""
+        """报告头/依据清单用的文档坐标列表（顺序 = 加载顺序）。
+
+        除坐标（doc_id/version/sha256/status）外，附带 registry 里的书目元数据
+        （title/doc_number/issuer/effective_from）——报告"依据清单"段直接取用，
+        避免报告层再去读一遍 registry（单一来源）。
+        """
         return [
             {
                 "doc_id": doc.get("doc_id", ""),
                 "version": doc.get("version", ""),
                 "sha256": doc.get("sha256", ""),
                 "status": doc.get("status", ""),
+                "title": doc.get("title", ""),
+                "doc_number": doc.get("doc_number", ""),
+                "issuer": doc.get("issuer", ""),
+                "kind": doc.get("kind", ""),
+                "effective_from": doc.get("effective_from", ""),
             }
             for doc in self.documents
         ]
@@ -129,6 +156,27 @@ def _parse_rule(raw, doc_id, version, where):
         _require(
             isinstance(params.get("regex"), str) and params["regex"],
             "{0} ({1}): pattern 规则必须给 params.regex".format(where, rule_id),
+        )
+    if check_type == "unique":
+        _require(
+            scope == SCOPE_IMPLICIT,
+            "{0} ({1}): unique 规则只能用于 implicit scope（整块隐式标识上下文）".format(where, rule_id),
+        )
+
+    # 场景门控（适用性画像）：only_if.scenario 只许声明已知场景，否则门控会静默失效
+    only_if = raw.get("only_if", {}) or {}
+    _require(isinstance(only_if, dict), "{0} ({1}): only_if 必须是对象".format(where, rule_id))
+    declared_scenarios = only_if.get("scenario") or []
+    _require(
+        isinstance(declared_scenarios, list),
+        "{0} ({1}): only_if.scenario 必须是数组".format(where, rule_id),
+    )
+    for scenario in declared_scenarios:
+        _require(
+            scenario in SCENARIOS,
+            "{0} ({1}): only_if.scenario 含未知场景 {2!r}（须为 {3}）".format(
+                where, rule_id, scenario, "/".join(SCENARIOS)
+            ),
         )
 
     # verified 条目必须挂条款与出处（"无出处的值不得以确定语气落库"）
@@ -265,8 +313,9 @@ def effective_ruleset(data_dir):
     1. 该**文档**在 ``registry`` 中 ``status=verified``；
     2. 该**条目**自身 ``status=verified``。
 
-    未满足者一律进 ``pending``（绝不参与判定）。M0 现状：两份文档均为 ``pending``
-    → ``effective`` 为空 —— 这正是"未核对不得生效"的可观测行为。
+    未满足者一律进 ``pending``（绝不参与判定）。M0 时两份文档均为 ``pending`` → ``effective``
+    为空；M1 后 GB 45438-2025 已逐页核对原文转 ``verified``（22 条生效），
+    《标识办法》条目记录法定义务与真实条号、保持 ``pending``（判定由国标承担）。
     """
     registry, registry_path = load_registry(data_dir)
     active = registry.get("active", {})
@@ -312,6 +361,12 @@ def effective_ruleset(data_dir):
             "version": active_version,
             "sha256": file_sha256,
             "status": doc_status,
+            # 书目元数据（报告"依据清单"段直接取用；单一来源 = registry）
+            "title": doc.get("title", ""),
+            "doc_number": doc.get("doc_number", ""),
+            "issuer": doc.get("issuer", ""),
+            "kind": doc.get("kind", ""),
+            "effective_from": ver.get("effective_from", ""),
         })
 
         for rule in rules:

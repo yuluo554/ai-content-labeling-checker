@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "_comment": "解析通路算例（冻结产物，由 tools/gen_parse.py 生成，禁手改）。bytes_b64 为**真实容器字节**（base64 编码以保持 data/** 为无 CR 文本资产）；内容全部虚构。",
+  "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+  "verified_at": "2026-10-13",
+  "wrapper": "AIGC",
+  "fixtures": [
+    {
+      "fixture_id": "PARSE-PNG-0001",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAX3RFWHRYTUw6Y29tLmFkb2JlLnhtcAB7IkFJR0MiOnsiTGFiZWwiOiIxIiwiQ29udGVudFByb2R1Y2VyIjoiU1lOLTAwMDEiLCJQcm9kdWNlSUQiOiJTWU4tQzEyMDc5NyJ9fRdKwXoAAAAASUVORK5CYII=",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "correct",
+        "field": null
+      },
+      "notes": "PNG 元数据含完整 AIGC 载荷；显式标识解析器不可见（渲染后画面）→ 显式 unknown"
+    },
+    {
+      "fixture_id": "PARSE-JPEG-0002",
+      "container": "jpeg",
+      "carrier": "image",
+      "bytes_b64": "/9j/4QBPeyJBSUdDIjp7IkxhYmVsIjoiMSIsIkNvbnRlbnRQcm9kdWNlciI6IlNZTi0wMDAxIiwiUHJvZHVjZUlEIjoiU1lOLUMxMjA3OTcifX3/2gAC/9k=",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "correct",
+        "field": null
+      },
+      "notes": "JPEG APP1 段含完整 AIGC 载荷；显式作用域未观测"
+    },
+    {
+      "fixture_id": "PARSE-PNG-0003",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAU3RFWHRYTUw6Y29tLmFkb2JlLnhtcAB7IkFJR0MiOnsiQ29udGVudFByb2R1Y2VyIjoiU1lOLTAwMDEiLCJQcm9kdWNlSUQiOiJTWU4tQzEyMDc5NyJ9fWWEWWUAAAAASUVORK5CYII=",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "non_compliant",
+        "implicit_fail_targets": [
+          "content_property"
+        ],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "missing_field",
+        "field": "content_property"
+      },
+      "notes": "缺 Label（生成合成标签要素），critical 级缺失 → non_compliant"
+    },
+    {
+      "fixture_id": "PARSE-PNG-0004",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAX3RFWHRYTUw6Y29tLmFkb2JlLnhtcAB7IkFJR0MiOnsiTGFiZWwiOiI5IiwiQ29udGVudFByb2R1Y2VyIjoiU1lOLTAwMDEiLCJQcm9kdWNlSUQiOiJTWU4tQzEyMDc5NyJ9fevI4nAAAAAASUVORK5CYII=",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [
+          "content_property"
+        ],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "wrong_value",
+        "field": "content_property"
+      },
+      "notes": "Label 取值 9（附录 E 允许 1/2/3），minor 级枚举 fail → partial"
+    },
+    {
+      "fixture_id": "PARSE-JPEG-0005",
+      "container": "jpeg",
+      "carrier": "image",
+      "bytes_b64": "/9j/4QBKeyJBSUdDIjp7IkxhYmVsIjoiMSIsIkNvbnRlbnRQcm9kdWNlciI6MTIzNDUsIlByb2R1Y2VJRCI6IlNZTi1DMTIwNzk3In19/9oAAv/Z",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [
+          "content_producer"
+        ],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "bad_format",
+        "field": "content_producer"
+      },
+      "notes": "服务提供者要素写成整数（附录 E 要求字符串）→ minor 类型 fail → partial"
+    },
+    {
+      "fixture_id": "PARSE-PNG-0006",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAcHRFWHRYTUw6Y29tLmFkb2JlLnhtcAB7IkFJR0MiOnsiTGFiZWwiOiIxIiwiQUlHQy5MYWJlbCI6IjEiLCJDb250ZW50UHJvZHVjZXIiOiJTWU4tMDAwMSIsIlByb2R1Y2VJRCI6IlNZTi1DMTIwNzk3In19Q2v77AAAAABJRU5ErkJggg==",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "non_compliant",
+        "implicit_fail_targets": [
+          "content_property"
+        ],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "duplicate_label",
+        "field": "content_property"
+      },
+      "notes": "同一要素经 Label 与 AIGC.Label 两个键提供 → §6.1 c) 唯一性 major fail → non_compliant"
+    },
+    {
+      "fixture_id": "PARSE-PNG-0007",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAHHRFWHRDb21tZW50AG5vIGFpZ2MgcGF5bG9hZCBoZXJlrdqFqQAAAABJRU5ErkJggg==",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "non_compliant",
+        "implicit_fail_targets": [
+          "content_property",
+          "content_producer",
+          "content_id"
+        ],
+        "explicit_fail_targets": [],
+        "reasons": [
+          "no_aigc_payload"
+        ]
+      },
+      "injected": {
+        "defect": "metadata_stripped",
+        "field": null
+      },
+      "notes": "结构完整但无 AIGC 载荷：隐式标识确实缺失（不是'没检查'）→ 字段全 fail"
+    },
+    {
+      "fixture_id": "PARSE-PNG-0008",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAX3RFWHRYTUw6Y29tLmFkb2JlLnhtcAB7IkFJR0MiOnsiTGFiZWwiOiIxIiwiQ29udGVudFByb2R1Y2VyIjoiU1lOLTAwMDEiLCJQcm9kdWNlSUQiOiJTWU4tQzEyMDc5NyJ9fRdKwXo=",
+      "expected": {
+        "implicit_observed": false,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [],
+        "explicit_fail_targets": [],
+        "reasons": [
+          "structure_broken"
+        ]
+      },
+      "injected": {
+        "defect": "structure_broken",
+        "field": null
+      },
+      "notes": "PNG 截断：结构不可信 → 隐式未观测 → 全部 unknown、等级 partial（待人工确认）"
+    },
+    {
+      "fixture_id": "PARSE-MP4-0009",
+      "container": "iso-bmff",
+      "carrier": "video",
+      "bytes_b64": "AAAAFGZ0eXBpc29tAAAAAGlzb20AAABVbW9vdnsiQUlHQyI6eyJMYWJlbCI6IjEiLCJDb250ZW50UHJvZHVjZXIiOiJTWU4tMDAwMSIsIlByb2R1Y2VJRCI6IlNZTi1DMTIwNzk3In19",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "correct",
+        "field": null
+      },
+      "notes": "MP4（ISO BMFF）moov 内含完整 AIGC 载荷；显式作用域未观测"
+    },
+    {
+      "fixture_id": "PARSE-M4A-0010",
+      "container": "iso-bmff",
+      "carrier": "audio",
+      "bytes_b64": "AAAAFGZ0eXBNNEEgAAAAAE00QSAAAABVbW9vdnsiQUlHQyI6eyJMYWJlbCI6IjEiLCJDb250ZW50UHJvZHVjZXIiOiJTWU4tMDAwMSIsIlByb2R1Y2VJRCI6IlNZTi1DMTIwNzk3In19",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "partial",
+        "implicit_fail_targets": [],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "correct",
+        "field": null
+      },
+      "notes": "M4A 主品牌 → 载体 audio；载荷齐备"
+    },
+    {
+      "fixture_id": "PARSE-PNG-0011",
+      "container": "png",
+      "carrier": "image",
+      "bytes_b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAX3RFWHRYTUw6Y29tLmFkb2JlLnhtcAB7IkFJR0MiOnsiTGFiZWwiOiIxIiwiQ29udGVudFByb2R1Y2VyIjoiU1lOLTAwMDEiLCJQcm9kdWNlSUQiOiJTWU4tQzEyMDc5NyJ9fRdKwXoAAABSdEVYdEFJR0MAeyJBSUdDIjp7IkxhYmVsIjoiMSIsIkNvbnRlbnRQcm9kdWNlciI6IlNZTi0wMDAxIiwiUHJvZHVjZUlEIjoiU1lOLUMxMjA3OTcifX2y2GXTAAAAAElFTkSuQmCC",
+      "expected": {
+        "implicit_observed": true,
+        "explicit_observed": false,
+        "grade": "non_compliant",
+        "implicit_fail_targets": [
+          "content_property"
+        ],
+        "explicit_fail_targets": [],
+        "reasons": []
+      },
+      "injected": {
+        "defect": "duplicate_label",
+        "field": "content_property"
+      },
+      "notes": "两个元数据块各含一份 AIGC 载荷 → 隐式标识重复保留 → §6.1 c) major fail"
+    }
+  ]
+}

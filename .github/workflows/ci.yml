@@ -63,6 +63,12 @@ jobs:
         run: |
           labelcheck selfcheck
 
+      - name: Desensitization audit (release gate; content side must be clean)
+        shell: bash
+        run: |
+          python tools/audit_desensitize.py --selftest
+          python tools/audit_desensitize.py
+
       - name: Run tests
         shell: bash
         run: |
@@ -112,3 +118,117 @@ jobs:
         run: |
           labelcheck check data/samples/card-text-basic.json
           echo "exit=$?"
+
+      # 解析通路（M2）：从冻结算例解码一个真实容器字节再解析 + 核验，
+      # 证明"新装环境 + 随附数据"下容器分派与解析都是可用的。
+      - name: CLI parse + check on a real container fixture
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64, json, pathlib
+          fx = json.loads(pathlib.Path("data/parse/fixtures.json").read_text(encoding="utf-8"))
+          first = next(f for f in fx["fixtures"] if f["expected"]["implicit_observed"])
+          pathlib.Path("sample-container.png").write_bytes(base64.b64decode(first["bytes_b64"]))
+          print("wrote sample-container.png from", first["fixture_id"])
+          PY
+          labelcheck parse sample-container.png
+          labelcheck check sample-container.png
+          echo "check exit=$?"
+
+      # 批量扫描 + 报告导出 + 两轮对账（M3）：core-only 环境（无 openpyxl）下
+      # 必须降级为 CSV 且 exit 0 —— 证明"报告导出不因缺可选依赖而崩"。
+      # 注意：随附样例含 1 件违规 → scan 退出码 1（**不是错误**，是"检出不合规"），
+      # 故用 `|| true` 容忍该码，仅断言产物齐全。
+      - name: CLI scan + report export (no report extras)
+        shell: bash
+        run: |
+          labelcheck scan data/samples --out scan-out --json > round1.json || true
+          ls scan-out
+          test -f scan-out/report.md
+          test -f scan-out/summary.csv
+          test -f scan-out/detail.csv
+          test -f scan-out/evidence.json
+          test ! -f scan-out/report.xlsx   # core-only：无 openpyxl → 降级为 CSV
+          labelcheck scan data/samples --baseline round1.json --out scan-out2 || true
+          test -f scan-out2/report.md
+
+      # 内置评测基准（M4）：三类基准一条命令跑全；core-only 环境（零第三方）下必须
+      # 全部达标 → exit 0。指标进 README（可信度核心证据），CI 每次重算以防回退。
+      - name: CLI bench (all three built-in suites)
+        shell: bash
+        run: |
+          labelcheck bench -v
+          labelcheck bench --json > bench.json
+          python -c "import json; d=json.load(open('bench.json', encoding='utf-8')); assert d['passed'], d; print('bench passed:', [s['name'] for s in d['suites']])"
+
+  # GUI 可加载性冒烟（M5）：装 gui extra，离屏渲染真实控件并驱动引擎。
+  # 无显示环境用 QT_QPA_PLATFORM=offscreen；本 job 只在 windows/py3.12 跑一次
+  # （PySide6 的 windows wheel 最贴近交付形态；旧解释器 3.8 的 PySide6 版本上限
+  # 已由 tests/test_gui_*.py 的 importorskip 在 test job 里覆盖到）。
+  gui-smoke:
+    name: gui smoke (windows / py3.12, offscreen)
+    runs-on: windows-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package with gui extras
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,gui]"
+
+      - name: GUI loadability self-check
+        shell: bash
+        run: |
+          labelcheck gui --check
+
+      - name: GUI + packaging tests (offscreen)
+        shell: bash
+        run: |
+          python -m pytest tests/test_gui_services.py tests/test_gui_layering.py \
+            tests/test_gui_tabs.py tests/test_packaging.py -ra
+
+  # 打包守门（M5）：packaging 模块的白名单与验伪逻辑零 PyInstaller 依赖，
+  # core-only 环境即可跑（真构建 exe 耗时长，不进 CI；本地用 tools/build_exe.py）。
+  packaging-guard:
+    name: packaging guard (${{ matrix.os }} / py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            python-version: "3.8"
+          - os: ubuntu-latest
+            python-version: "3.12"
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install (core + dev; packaging guard needs pytest, not PyInstaller)
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Packaging guard tests (no PyInstaller needed)
+        shell: bash
+        run: |
+          python -m pytest tests/test_packaging.py -ra

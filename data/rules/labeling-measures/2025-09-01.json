@@ -2,77 +2,198 @@
   "schema_version": 1,
   "doc_id": "labeling-measures",
   "version": "2025-09-01",
-  "_status": "pending",
-  "_comment": "《人工智能生成合成内容标识办法》核查规则骨架。全部条目 status=pending —— M1 须逐条挂办法原文条号与出处后方可转 verified 进入判定路径。此处字段/位置取值为占位骨架，不得作为合规口径引用。",
   "rules": [
     {
-      "rule_id": "measures:explicit:text.service.provider.notice",
+      "rule_id": "measures:explicit:text.notice.position",
       "scope": "explicit",
-      "carrier": ["text"],
-      "target": "text_service_provider_notice",
-      "check_type": "presence",
-      "params": {},
-      "severity": "major",
-      "clause": {
-        "article": "待核对",
-        "excerpt": "服务提供者应当对生成合成内容添加显式标识（要点待核对）"
-      },
-      "status": "pending",
-      "source_url": "https://www.cac.gov.cn/",
-      "verified_at": null
-    },
-    {
-      "rule_id": "measures:explicit:text.reader.notice.position",
-      "scope": "explicit",
-      "carrier": ["text"],
-      "target": "text_reader_notice",
+      "carrier": [
+        "text"
+      ],
+      "target": "text_explicit_notice",
       "check_type": "position",
       "params": {
-        "allowed": ["head", "tail", "interleaved"]
+        "allowed": [
+          "head",
+          "tail",
+          "middle"
+        ]
       },
+      "severity": "minor",
+      "only_if": {
+        "carrier": [
+          "text"
+        ]
+      },
+      "clause": {
+        "article": "第四条（一）",
+        "excerpt": "文本内容：在起始、末尾或者中间适当位置添加文字/通用符号提示等标识，或在交互场景界面、文字周边添加显著提示标识"
+      },
+      "status": "pending",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:explicit:image.notice.presence",
+      "scope": "explicit",
+      "carrier": [
+        "image"
+      ],
+      "target": "image_explicit_notice",
+      "check_type": "presence",
+      "params": {},
       "severity": "major",
       "only_if": {
-        "carrier": ["text"]
+        "carrier": [
+          "image"
+        ]
       },
       "clause": {
-        "article": "待核对",
-        "excerpt": "文本内容应在起始、结尾或适当位置添加提示（位置枚举取值待以原文核对）"
+        "article": "第四条（三）",
+        "excerpt": "图片内容：在图片的适当位置添加显著的提示标识"
       },
       "status": "pending",
-      "source_url": "https://www.cac.gov.cn/",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
       "verified_at": null
     },
     {
-      "rule_id": "measures:implicit:service.provider.name",
-      "scope": "implicit",
-      "carrier": [],
-      "target": "service_provider_name",
+      "rule_id": "measures:explicit:audio.notice.presence",
+      "scope": "explicit",
+      "carrier": [
+        "audio"
+      ],
+      "target": "audio_explicit_notice",
       "check_type": "presence",
       "params": {},
       "severity": "major",
+      "only_if": {
+        "carrier": [
+          "audio"
+        ]
+      },
       "clause": {
-        "article": "待核对",
-        "excerpt": "隐式标识应含服务提供者名称（字段名以标准原文为准）"
+        "article": "第四条（二）",
+        "excerpt": "音频内容：在起始、末尾或者中间适当位置添加语音提示或音频节奏提示等标识"
       },
       "status": "pending",
-      "source_url": "https://www.cac.gov.cn/",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
       "verified_at": null
     },
     {
-      "rule_id": "measures:implicit:service.provider.code",
-      "scope": "implicit",
-      "carrier": [],
-      "target": "service_provider_code",
+      "rule_id": "measures:explicit:video.notice.presence",
+      "scope": "explicit",
+      "carrier": [
+        "video"
+      ],
+      "target": "video_explicit_notice",
       "check_type": "presence",
       "params": {},
       "severity": "major",
+      "only_if": {
+        "carrier": [
+          "video"
+        ]
+      },
       "clause": {
-        "article": "待核对",
-        "excerpt": "隐式标识应含服务提供者编码（字段名与格式以标准原文为准）"
+        "article": "第四条（四）",
+        "excerpt": "视频内容：在起始画面和播放周边的适当位置添加显著提示标识，可在末尾和中间适当位置添加"
       },
       "status": "pending",
-      "source_url": "https://www.cac.gov.cn/",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
       "verified_at": null
+    },
+    {
+      "rule_id": "measures:implicit:content.property.presence",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_property",
+      "check_type": "presence",
+      "params": {},
+      "severity": "critical",
+      "only_if": {},
+      "clause": {
+        "article": "第五条",
+        "excerpt": "应按照《互联网信息服务深度合成管理规定》第十六条在文件元数据中添加隐式标识，包含生成合成内容属性信息、服务提供者名称或者编码、内容编号等制作要素信息"
+      },
+      "status": "pending",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:implicit:service.provider.presence",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_producer",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {},
+      "clause": {
+        "article": "第五条",
+        "excerpt": "制作要素信息之一：服务提供者名称或者编码"
+      },
+      "status": "pending",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:implicit:content.id.presence",
+      "scope": "implicit",
+      "carrier": [],
+      "target": "content_id",
+      "check_type": "presence",
+      "params": {},
+      "severity": "minor",
+      "only_if": {},
+      "clause": {
+        "article": "第五条",
+        "excerpt": "制作要素信息之一：内容编号"
+      },
+      "status": "pending",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "verified_at": null
+    },
+    {
+      "rule_id": "measures:explicit:export.file.label.presence",
+      "scope": "explicit",
+      "carrier": [],
+      "target": "exported_file_explicit_label",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {
+        "scenario": [
+          "exported"
+        ]
+      },
+      "clause": {
+        "article": "第四条第二款",
+        "excerpt": "提供下载、复制、导出等功能时，应确保文件中含有符合本办法第四条要求的显式标识（导出场景适用）"
+      },
+      "status": "verified",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "verified_at": "2026-10-13"
+    },
+    {
+      "rule_id": "measures:propagation:platform.hint.presence",
+      "scope": "explicit",
+      "carrier": [],
+      "target": "propagation_platform_hint",
+      "check_type": "presence",
+      "params": {},
+      "severity": "major",
+      "only_if": {
+        "scenario": [
+          "propagated"
+        ]
+      },
+      "clause": {
+        "article": "第六条",
+        "excerpt": "提供网络信息内容传播服务的服务提供者应核验隐式标识，并在发布内容周边添加显著的提示标识（传播场景适用）"
+      },
+      "status": "verified",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "verified_at": "2026-10-13"
     }
-  ]
+  ],
+  "_comment": "《人工智能生成合成内容标识办法》（国信办通字〔2025〕2 号）条目（冻结产物，由 tools/gen_rulesets.py 生成，禁手改）。条号已核对；条目 status=pending——技术判定路径由 GB 45438-2025 承担，避免同一 target 跨文档重复判定。"
 }

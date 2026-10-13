@@ -35,8 +35,17 @@ dependencies = []
 [project.optional-dependencies]
 dev = ["pytest", "pyyaml"]
 report = ["openpyxl"]
-gui = ["PySide6"]
-pkg = ["pyinstaller"]
+# 旧解释器（3.8）上的重依赖写**上限**（只写下限等于没 pin，见 plan/03 §五）：
+# 系列实测 PySide6 6.6.3.1 为 Python 3.8 可解析的最高版本；3.9+ 放开到 6.7。
+gui = [
+    "PySide6<=6.6.3.1; python_version < '3.9'",
+    "PySide6>=6.6,<6.8; python_version >= '3.9'",
+]
+# PyInstaller 5 支持 3.8；6 需要 3.8+ 但 spec 写法已兼容两版（PYZ(analysis.pure)）。
+pkg = [
+    "pyinstaller>=5.13,<6; python_version < '3.9'",
+    "pyinstaller>=6; python_version >= '3.9'",
+]
 
 [project.scripts]
 labelcheck = "labelcheck.cli.main:main"

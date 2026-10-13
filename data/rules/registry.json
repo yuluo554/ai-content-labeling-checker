@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "_comment": "依据文件注册表。status=verified 的文档+条目才能进入判定路径；active 声明当前生效版本（切换核查口径 = 改这里）。",
+  "_comment": "依据文件注册表（冻结产物，由 tools/gen_rulesets.py 生成）。status=verified 的文档+条目才进判定路径；active 声明当前生效版本。",
   "documents": [
     {
       "doc_id": "labeling-measures",
@@ -9,18 +9,18 @@
       "kind": "measure",
       "issuer": "国家互联网信息办公室、工业和信息化部、公安部、国家广播电视总局",
       "effective_from": "2025-09-01",
-      "status": "pending",
-      "source_url": "https://www.cac.gov.cn/",
-      "note": "M1：逐条核对条号与本机登记出处后转 verified",
+      "status": "verified",
+      "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+      "note": "条号已按中国政府网全文核对（第四条–第六条）。M2：办法独有义务（第四条第二款导出文件、第六条传播平台提示）在适用性画像建立后转 verified；与国标同 target 的条目保持 pending，技术判定由 GB 45438-2025 承担，避免同一目标跨文档重复判定",
       "versions": [
         {
           "version": "2025-09-01",
           "effective_from": "2025-09-01",
           "rules_file": "labeling-measures/2025-09-01.json",
-          "status": "pending",
-          "sha256": null,
-          "source_url": "https://www.cac.gov.cn/",
-          "note": "sha256 由 tools/gen_rulesets.py 生成后回填；M0 为 null（不校验指纹）"
+          "status": "verified",
+          "sha256": "1dc50369123d124c90b27f00327806e07c78964fe05c3f802fb46df895f8cd9d",
+          "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
+          "note": "条号已按中国政府网全文核对（第四条–第六条）。M2：办法独有义务（第四条第二款导出文件、第六条传播平台提示）在适用性画像建立后转 verified；与国标同 target 的条目保持 pending，技术判定由 GB 45438-2025 承担，避免同一目标跨文档重复判定"
         }
       ]
     },
@@ -31,18 +31,18 @@
       "kind": "mandatory-standard",
       "issuer": "国家市场监督管理总局、国家标准化管理委员会",
       "effective_from": "2025-09-01",
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "note": "强制性国标；M1：隐式标识字段清单与显式位置要求须以标准原文逐字核对",
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "note": "强制性国标；M1 已按在线预览逐页核对（条款 5.1–5.4、6.1、附录 E），条目全部 verified",
       "versions": [
         {
           "version": "2025-09-01",
           "effective_from": "2025-09-01",
           "rules_file": "gb45438-2025/2025-09-01.json",
-          "status": "pending",
-          "sha256": null,
-          "source_url": "https://openstd.samr.gov.cn/",
-          "note": "sha256 由 tools/gen_rulesets.py 生成后回填；M0 为 null（不校验指纹）"
+          "status": "verified",
+          "sha256": "fc986cb1409f0ddff6de6676ecb8ac9761cdb372b1943b4a611e589857973854",
+          "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+          "note": "强制性国标；M1 已按在线预览逐页核对（条款 5.1–5.4、6.1、附录 E），条目全部 verified"
         }
       ]
     }

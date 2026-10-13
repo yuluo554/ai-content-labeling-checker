@@ -1,72 +1,108 @@
 {
   "schema_version": 1,
-  "_comment": "元数据字段映射表：容器/元数据键 → 国标字段。M0 为占位骨架（全部 status=pending）；M1 须以 GB 45438-2025 原文核对字段名/别名/类型/取值后转 verified。aliases 顺序敏感（归一取声明序最先命中者）。",
+  "_comment": "元数据字段映射表（冻结产物，由 tools/gen_mapping.py 生成，禁手改）。字段名/别名/类型以 GB 45438-2025 §6.1 与规范性附录 E 原文为准；aliases 顺序敏感（归一取声明序最先命中者）。核对日 2026-10-13。",
+  "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+  "verified_at": "2026-10-13",
   "profiles": {
     "generic_metadata": [
-      "content.property",
-      "service.provider.name",
-      "service.provider.code",
-      "content.id"
+      "AIGC:Label",
+      "AIGC:ContentProducer",
+      "AIGC:ProduceID",
+      "AIGC:Propagator",
+      "AIGC:PropagatorID"
     ]
+  },
+  "parse_profile": {
+    "payload_wrapper": "AIGC",
+    "source_clause": "附录 E b)"
   },
   "fields": [
     {
       "national_field": "content_property",
-      "label": "生成合成内容属性信息",
+      "label": "生成合成标签要素（内容的人工智能生成合成属性信息）",
       "aliases": [
-        "content.property",
-        "ai.property",
-        "AIGC:Property"
+        "AIGC:Label",
+        "AIGC.Label",
+        "aigc.label",
+        "Label"
       ],
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
       "clause": {
-        "article": "待核对",
-        "excerpt": "生成合成内容属性信息字段（字段名与取值枚举待以标准原文核对）"
+        "article": "6.1 a) 1) / 附录 E c)",
+        "excerpt": "生成合成标签要素由 Label 表示，取值 1=属于、2=可能为、3=疑似为人工智能生成合成内容，类型为字符串"
       }
     },
     {
-      "national_field": "service_provider_name",
-      "label": "服务提供者名称",
+      "national_field": "content_producer",
+      "label": "生成合成服务提供者要素（名称或编码）",
       "aliases": [
-        "service.provider.name",
-        "ServiceProvider",
-        "XMP:CreatorTool"
+        "AIGC:ContentProducer",
+        "AIGC.ContentProducer",
+        "aigc.contentproducer",
+        "ContentProducer"
       ],
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
       "clause": {
-        "article": "待核对",
-        "excerpt": "服务提供者名称字段（字段名与类型待以标准原文核对）"
-      }
-    },
-    {
-      "national_field": "service_provider_code",
-      "label": "服务提供者编码",
-      "aliases": [
-        "service.provider.code",
-        "ServiceProviderCode"
-      ],
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
-      "clause": {
-        "article": "待核对",
-        "excerpt": "服务提供者编码字段（格式要求待以标准原文核对）"
+        "article": "6.1 a) 2) / 附录 E d)",
+        "excerpt": "生成合成服务提供者要素由 ContentProducer 表示，存储服务提供者的名称或编码，类型为字符串"
       }
     },
     {
       "national_field": "content_id",
-      "label": "内容制作编号",
+      "label": "内容制作编号要素",
       "aliases": [
-        "content.id",
-        "ContentID",
-        "XMP:InstanceID"
+        "AIGC:ProduceID",
+        "AIGC.ProduceID",
+        "aigc.produceid",
+        "ProduceID"
       ],
-      "status": "pending",
-      "source_url": "https://openstd.samr.gov.cn/",
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
       "clause": {
-        "article": "待核对",
-        "excerpt": "内容制作编号字段（字段名与格式待以标准原文核对）"
+        "article": "6.1 a) 3) / 附录 E e)",
+        "excerpt": "内容制作编号要素由 ProduceID 表示，存储生成合成服务提供者对该内容的唯一编号，类型为字符串"
+      }
+    },
+    {
+      "national_field": "content_propagator",
+      "label": "内容传播服务提供者要素（名称或编码）",
+      "aliases": [
+        "AIGC:ContentPropagator",
+        "AIGC.ContentPropagator",
+        "aigc.contentpropagator",
+        "ContentPropagator",
+        "AIGC:Propagator",
+        "AIGC.Propagator",
+        "aigc.propagator",
+        "Propagator"
+      ],
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "clause": {
+        "article": "6.1 a) 4) / 附录 E g)",
+        "excerpt": "内容传播服务提供者要素由 ContentPropagator（附录 F 示例作 Propagator）表示，存储内容传播服务提供者的名称或编码，类型为字符串"
+      }
+    },
+    {
+      "national_field": "propagate_id",
+      "label": "内容传播编号要素",
+      "aliases": [
+        "AIGC:PropagateID",
+        "AIGC.PropagateID",
+        "aigc.propagateid",
+        "PropagateID",
+        "AIGC:PropagatorID",
+        "AIGC.PropagatorID",
+        "aigc.propagatorid",
+        "PropagatorID"
+      ],
+      "status": "verified",
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
+      "clause": {
+        "article": "6.1 a) 5) / 附录 E h)",
+        "excerpt": "内容传播编号要素由 PropagateID（附录 F 示例作 PropagatorID）表示，存储内容传播服务提供者对该内容的唯一编号，类型为字符串"
       }
     }
   ]
