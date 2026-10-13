@@ -142,8 +142,35 @@ py -X utf8 tools/audit_desensitize.py --selftest # 探测器阳性/阴性对照
 
 **修正提交**：`git commit --amend`（显式带 `GIT_COMMITTER_EMAIL=<noreply>`，防 amend 回落旧邮箱）→ `push --force-with-lease`。
 
-### 4.3 待回填（发布动作完成后）
+### 4.2b 二次历史重写（留档自命中，如实记录）
 
-- ⬜ tag `v0.1.0` + Release（挂 ASCII 命名 zip）+ 附件 sha256 留档
-- ⬜ 发布后复核：全新 clone 历史三扫 + 全量测试；`gh release download` 真下载 → 核对 sha256 → 解压中立目录跑冻结态自检
-- ⬜ CI 轮数与 push 数对账
+> **瑕疵留痕**：§4.1 第 7 步的验证**描述**里复述了旧邮箱的本地片段字面值——发布后**全新 clone 的历史扫描当场抓出**
+> （这正是"留档本身成为命中源"的经典形态）。处置链：
+
+1. 文档**占位符化**（"固定字面值（旧邮箱本地片段，此处不复述）"）→ 提交；
+2. `git filter-branch --tree-filter`（python 脚本，容忍早期提交无该文件；**首次用 MSYS 路径 `/d/...` 静默 0 改动**，
+   改 **Windows 路径**后生效——tree-filter 在 Windows 下 `py` 解析不了 MSYS 路径）；
+3. 重打 tag（annotated tag 仍指旧提交 → 删后重建）；
+4. `rm -rf .git/refs/original` + `reflog expire --expire=now --all` + `gc --prune=now --aggressive`
+   （清悬空 tag 对象）；
+5. 复验：全对象 blob 扫描 + `git fsck` 双确认 0 命中；
+6. `push --force origin main` + `push --force origin refs/tags/v0.1.0`（`--force-with-lease` 因远端跟踪 ref
+   过期被拒 → `git fetch` 后 `--force`）。
+
+**终态**：远端 main 与 tag 均指向 `5970b07`；全新 clone 实测 emails 全 noreply、blob/patch 字面值 0 命中。
+
+### 4.3 发布动作与复核（已完成）
+
+| 项 | 结果 |
+|---|---|
+| tag `v0.1.0` | ✅ 指向 `5970b07`（scrubbed HEAD）；`gh release create` 挂两个 ASCII 命名 zip |
+| Release 附件 | ✅ `labelcheck-cli-v0.1.0-win64.zip`（7401819 B）+ `labelcheck-gui-v0.1.0-win64.zip`（45767613 B） |
+| 附件 sha256（留档） | CLI `604df8632f91d1067d378ebe3ae232f065c955a7d2ed39a24ec109cfd138c29e`；GUI `72fd7ab1a4f88f5c7058d4ece5711c43b18cfad0fd0d98db0876481616c2e86c` |
+| **发布物本体验证** | ✅ `gh release download` 真下载 → sha256 **逐位一致** → 中立目录解压 → CLI `selfcheck` / GUI `--selftest` 均 `frozen=true`、数据在解压目录内、27 条规则 |
+| 全新 clone 复核 | ✅ 历史三扫（blob/消息/patch）字面值 0；emails 全 noreply；仓库自带 `audit_desensitize` 通过；测试 **435 passed + 3 skipped**（2 项 live-exe 因无 dist、1 项 XLSX） |
+| CI 轮数对账 | ✅ 分支 push 3 次 = run 3 次（首跑红→修 3 处→绿；第二次 push 后绿；末次 force-push 后绿）；tag push **不**触发（ci.yml 未配 tag 触发，如实记录） |
+| CI 全 job | ✅ 8/8（test/cli-smoke/packaging-guard/gui-smoke × 矩阵）|
+
+> **首跑教训（写进方法论）**：本项目 M0–M6 全程无远端 → **发布当口才是全项目首次 CI**，
+> 三个潜伏缺陷（cp1252 stdout、gui 惰性导入范围、job 缺 pytest）一次爆发，均"本机 Windows 开发环境跑不出来"。
+> 本机全绿 ≠ CI 绿。

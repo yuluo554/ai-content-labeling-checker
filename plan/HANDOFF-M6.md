@@ -55,10 +55,12 @@
 
 > **M6 执行后状态（2026-10-13 回写）**：1️⃣ 脱敏脚本 ✅ 已实现（`tools/audit_desensitize.py`，
 > 四步 + 产物本体扫描 + 阳性/阴性对照自检）；2️⃣ 历史邮箱重写 ✅ **已执行**（用户授权后
-> `filter-branch --env-filter` 全历史改写为 noreply，验证 0 残留）；3️⃣ exe/dist 不入仓 ✅ 已确认；
-> 4️⃣ GitHub Release ⏳ **仓库已建、main 已推送、CI 已触发**；tag/Release 待补；5️⃣ 收尾固化 ✅ 已完成。
-> **动作留档**：[RELEASE-M6.md](RELEASE-M6.md)（脱敏审计结果 + 发布时序 + **首跑 CI 抓出的 3 处真实缺陷**）。
-> 续接指针：授权解除后按 RELEASE-M6 §二/§四 时序执行。
+> `filter-branch --env-filter` 全历史改写为 noreply；二次 `tree-filter` 清"留档自命中"；验证 0 残留）；
+> 3️⃣ exe/dist 不入仓 ✅ 已确认；4️⃣ GitHub Release ✅ **已发布**（仓库 `yuluo554/ai-content-labeling-checker`
+> 公开 + Release **v0.1.0** 挂双 exe 的 ASCII 命名 zip；CI 8 job 全绿；发布物下载核 sha256 + 冻结态自检）；
+> 5️⃣ 收尾固化 ✅ 已完成。
+> **动作留档**：[RELEASE-M6.md](RELEASE-M6.md)（脱敏审计结果 + 发布时序 + **首跑 CI 抓出的 3 处真实缺陷**
+> + 二次历史重写瑕疵留痕）。
 
 1. **脱敏四步审计**（`tools/audit_desensitize.py`，M6 新建）——✅ **已实现**：
    - **提交元数据邮箱**：`git log --format="%ae %ce"` 是**真实个人邮箱**（实测 5 条提交）→ 发布前用
@@ -79,10 +81,11 @@
 3. **exe/dist 产物不入仓**：`dist/`、`build/` 已在 `.gitignore`；`tools/*.spec` **例外放行**
    （构建脚本入仓）。M6 已确认 `git ls-files` 无 `dist/`/`build/` 文件。Release **只挂 exe**
    （`dist/*` 打包成 zip）。✅
-4. **GitHub Release**：`labelcheck-gui.exe` + `labelcheck.exe`（onedir zip）+ 演示素材；
-   Release 说明引 `docs/技术报告.md`。⬜ **待用户授权**（时序见 RELEASE-M6 §二）
+4. **GitHub Release**：`labelcheck-gui.exe` + `labelcheck.exe`（onedir zip）——✅ **已发布**
+   Release **v0.1.0**（`https://github.com/yuluo554/ai-content-labeling-checker/releases/tag/v0.1.0`，
+   附件 ASCII 命名：`labelcheck-cli/gui-v0.1.0-win64.zip`）。演示素材随仓库（`docs/demo/`）。
 5. **收尾固化**：README 状态行/链接核对 ✅；`plan/05` M6 DoD 勾选 ✅；`plan/00` 状态回写 ✅；
-   `plan/06` D41–D43 + P3 结论 ✅；`tools/README.md` 登记 ✅。`git tag` + `release` ⬜ 待授权。
+   `plan/06` D41–D43 + P3 结论 ✅；`tools/README.md` 登记 ✅；`git tag v0.1.0` + `gh release create` ✅。
 
 ## 四、关键命令速查
 

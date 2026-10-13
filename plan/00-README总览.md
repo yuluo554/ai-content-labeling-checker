@@ -67,14 +67,16 @@
 | M3 | 完整性判定 + 批量扫描：合规分级 + 目录批量 + 两轮对账 + 报告证据链 | ✅ 完成 2026-10-13 |
 | M4 | 基准：字段规则/构造真值/批量对账三类扫描，指标进 README | ✅ 完成 2026-10-13 |
 | M5 | 桌面交付：PySide6 界面 + PyInstaller 双 exe + 演示素材 + 技术报告 | ✅ 完成 2026-10-13 |
-| M6 | 脱敏发布 GitHub + Release（exe）+ 收尾固化 | ✅ 完成 2026-10-13（发布动作待用户授权） |
+| M6 | 脱敏发布 GitHub + Release（exe）+ 收尾固化 | ✅ 完成 2026-10-13（已发布：仓库 + Release v0.1.0） |
 
 > **M6 交付物**：`tools/audit_desensitize.py`（脱敏四步审计 + 探测器阳性/阴性对照；
 > 命中分 block/advisory 两级 + 行内 `audit-allow` 放行）、`tests/test_audit_desensitize.py`（18 项）。
-> 内容侧全量扫描**阻断项 0**（白名单/advisory 放过的是合法指纹与官方依据快照）；资产口径与版权口径复核通过；
-> **唯一待办 = 提交元数据邮箱**（历史提交的作者/提交者邮箱为真实个人邮箱；按脱敏纪律不复述字面值）——历史重写**须用户明确授权**。
+> 内容侧全量扫描**阻断项 0**；资产口径与版权口径复核通过；**提交邮箱已全历史改写为 GitHub noreply**
+> （`filter-branch --env-filter` + 二次 tree-filter 清除留档自命中，验证 blob/patch 0 命中）。
+> **已发布**：`yuluo554/ai-content-labeling-checker`（公开）+ **Release v0.1.0**（挂双 exe 的
+> ASCII 命名 zip）；CI 8 job 全绿；发布物本体经 `gh release download` 下载核 sha256 + 中立目录冻结态自检。
 > 收尾固化：`tools/README.md` 登记、`plan/05` M6 DoD、`plan/06` D41–D43 + P3 结论、本文件回写、README 状态。
-> 发布动作（`git tag` + GitHub Release 挂 exe）待用户授权后执行，见 [plan/RELEASE-M6.md](RELEASE-M6.md)。
+> 完整留档见 [plan/RELEASE-M6.md](RELEASE-M6.md)（含首跑 CI 抓出的 3 处真实缺陷）。
 
 > **M5 交付物**：`src/labelcheck/gui/`（`services.py` **唯一引擎调用点**且**零 Qt** +
 > `format.py` 渲染 + `tabs.py` 六页签（单件核验/批量扫描/两轮对账/基准指标/规则库与依据/关于）+

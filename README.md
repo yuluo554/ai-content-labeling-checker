@@ -6,11 +6,11 @@
 
 **全本地核查、零上传**：被核查内容可能含商业敏感信息，工具默认不联网，且**不做任何去水印/标识规避**（明确非目标）。
 
-> 状态：✅ **M6 发布门就绪（2026-10-13）**——新增**脱敏四步审计**（`tools/audit_desensitize.py`：
-> 内容扫描 + 提交元数据邮箱 + 资产口径 + 版权口径，含探测器阳性/阴性对照），仓库内容侧**阻断项 0**；
-> 收尾固化（README/plan 回写）完成。**发布动作**（历史邮箱改写 + `git tag` + GitHub Release 挂 exe）
-> **待用户授权**后执行，见 [plan/RELEASE-M6.md](plan/RELEASE-M6.md)。
-> 上一棒 M5（桌面界面 + 双 exe + 演示素材 + 技术报告）见 [plan/HANDOFF-M6.md](plan/HANDOFF-M6.md)。
+> 状态：✅ **v0.1.0 已发布（2026-10-13）**——GitHub 仓库 + **Release v0.1.0**（挂免安装双 exe 的
+> ASCII 命名 zip）；发布前经**脱敏四步审计**（`tools/audit_desensitize.py`：内容扫描 + 提交邮箱 +
+> 资产口径 + 版权口径 + 产物本体扫描，含探测器阳性/阴性对照），内容侧**阻断项 0**，提交邮箱已全历史
+> 改写为 GitHub noreply。CI 8 job 全绿；发布物本体经下载核 sha256 + 中立目录冻结态自检。
+> 完整留档见 [plan/RELEASE-M6.md](plan/RELEASE-M6.md)；上一棒 M5 见 [plan/HANDOFF-M6.md](plan/HANDOFF-M6.md)。
 
 ---
 
@@ -139,6 +139,18 @@ python tools/verify_package.py      # 中立环境验收（清环境变量 + 以
 > 出现"本机能跑、换机就崩"）。CLI exe 不含 Qt（实测 ≈13 MB），GUI exe 含 Qt（≈158 MB）。
 > 演示素材由 `python tools/make_demo_assets.py` 离屏渲染真实界面产出（保证与当前代码一致）。
 
+## 下载即用（免安装）
+
+不想装 Python？直接下 **[Release v0.1.0](https://github.com/yuluo554/ai-content-labeling-checker/releases/tag/v0.1.0)**：
+
+| 附件 | 形态 | 用途 |
+|---|---|---|
+| `labelcheck-gui-v0.1.0-win64.zip` | 窗口版（无控制台） | 解压后双击 `labelcheck-gui.exe` |
+| `labelcheck-cli-v0.1.0-win64.zip` | 控制台版 | 脚本化 / 无 GUI 机器（可管道取 JSON、判退出码） |
+
+解压到任意目录即可运行（onedir 形态）。校验：`certutil -hashfile <zip> SHA256`
+（sha256 值见 Release 说明）。
+
 ## 快速开始
 
 要求 Python 3.8+（无第三方依赖即可跑核心功能）。
@@ -248,7 +260,7 @@ tools/                    生成器（gen_* 四个）+ 打包/验收（build_exe
 | M3 | **批量扫描** + **两轮对账** + **报告/证据链导出** | ✅ 2026-10-13 |
 | M4 | **三类内置基准**（字段规则/构造真值/批量对账），**指标进 README** | ✅ 2026-10-13 |
 | M5 | **PySide6 界面** + **PyInstaller 双 exe** + **演示素材** + **技术报告** | ✅ 2026-10-13 |
-| M6 | **脱敏审计** + 发布 GitHub Release（exe）+ 收尾固化 | ✅ 2026-10-13（发布动作待授权） |
+| M6 | **脱敏审计** + 发布 GitHub Release（exe）+ 收尾固化 | ✅ 2026-10-13（v0.1.0 已发布） |
 
 ## 限制与免责
 
