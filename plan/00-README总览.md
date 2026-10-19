@@ -68,6 +68,7 @@
 | M4 | 基准：字段规则/构造真值/批量对账三类扫描，指标进 README | ✅ 完成 2026-10-13 |
 | M5 | 桌面交付：PySide6 界面 + PyInstaller 双 exe + 演示素材 + 技术报告 | ✅ 完成 2026-10-13 |
 | M6 | 脱敏发布 GitHub + Release（exe）+ 收尾固化 | ✅ 完成 2026-10-13（已发布：仓库 + Release v0.1.0） |
+| v0.2.0 迭代 | 工程门禁现代化（Python 3.12 / Qt 6.12 / PyInstaller 6.22 / CI 覆盖补齐 + package job）+ 文档数字修正 + SARIF/HTML 导出 + `rules` 子命令 | ⏳ 本地构建并验证，**未发布**（2026-10-19） |
 
 > **M6 交付物**：`tools/audit_desensitize.py`（脱敏四步审计 + 探测器阳性/阴性对照；
 > 命中分 block/advisory 两级 + 行内 `audit-allow` 放行）、`tests/test_audit_desensitize.py`（18 项）。
@@ -85,8 +86,9 @@
 > `assert_ready()` 前置检查）、CLI `gui` 子命令（函数体内惰性导入；`--check` 可加载性自检）、
 > `tools/`（`build_exe.py` + `labelcheck.spec` + `entry_gui.py`/`entry_cli.py` +
 > `verify_package.py` + `make_demo_assets.py`）、`docs/技术报告.md` + `docs/demo/`（截图 + GIF）。
-> onedir **双 exe** 实测通过冻结态验伪（GUI `console=False` ≈158 MB / CLI `console=True` ≈13 MB，
-> CLI 排除 Qt 但保留 openpyxl）；测试 **420 项**全绿（3.8/3.12 双通过，3.12 跳过 1 项 XLSX 用例）；
+> onedir **双 exe** 实测通过冻结态验伪（GUI `console=False` 文件夹 112 MB / CLI `console=True` 文件夹 17 MB，
+> CLI 排除 Qt 但保留 openpyxl；2026-10-19 按 Release 附件实测修正旧值 ≈158/≈13 MB）；
+> 测试 **420 项**全绿（3.8/3.12 双通过，3.12 跳过 1 项 XLSX 用例；v0.2.0 时为 **463 项**全 py3.12 通过）；
 > 生成器 4 个 `--check` 位级一致；生效规则仍 27 条。
 
 > **M4 交付物**：`src/labelcheck/benchmark/`（`cases.py` **单一实现源**（对账口径 + 三类算例）+

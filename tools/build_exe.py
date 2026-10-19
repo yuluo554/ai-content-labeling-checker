@@ -3,9 +3,9 @@
 
 用法（仓库根，**用 py 启动器**，Windows 上 ``python`` 是商店占位符）：
 
-    py -3.8 -m tools.build_exe                # 构建 + 自动校验
-    py -3.8 -m tools.build_exe --no-verify    # 只构建
-    py -3.8 -m tools.build_exe --clean        # 先清 dist/build
+    py -3.12 -m tools.build_exe                # 构建 + 自动校验
+    py -3.12 -m tools.build_exe --no-verify    # 只构建
+    py -3.12 -m tools.build_exe --clean        # 先清 dist/build
 
 流程：① 前置检查数据白名单齐全 → ② 调 PyInstaller（``tools/labelcheck.spec``）→
 ③ 调 :func:`labelcheck.packaging.verify_dist` 断言"内嵌数据落在 dist 之内且可用"。

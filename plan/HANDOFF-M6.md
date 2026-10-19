@@ -35,8 +35,12 @@
 
 **文档**：`docs/技术报告.md`（七章）、`docs/demo/`（5 张页签截图 + `demo.gif`）。
 
-**实测产物**：`dist/labelcheck-gui/labelcheck-gui.exe`（`console=False`，≈158 MB）+
-`dist/labelcheck/labelcheck.exe`（`console=True`，≈14 MB，**不含 Qt、含 openpyxl**）。
+**实测产物**：`dist/labelcheck-gui/labelcheck-gui.exe`（`console=False`，文件夹 **112 MB**）+
+`dist/labelcheck/labelcheck.exe`（`console=True`，文件夹 **17 MB**，**不含 Qt、含 openpyxl**）。
+> 体积口径（2026-10-19 按 Release v0.1.0 附件实测修正）：CLI 文件夹 17 MB / GUI 文件夹 112 MB；
+> zip 分别 7,401,819 B / 45,767,613 B。旧值 ≈14/≈158 MB 为估测，已作废（见 plan/06 D45）。
+> **v0.2.0 本机构建另有口径**：py3.12 + PySide6 6.12 + PyInstaller 6.22 → CLI 19 MB / GUI 120 MB
+> （体积随 Qt/PyInstaller 版本变化，故对外一律以"你下载到的 Release 附件"为准）。
 
 ## 二、M5 关键口径（**与本 HANDOFF 同步的既定口径，改前先对照**）
 
@@ -96,13 +100,13 @@ PYTHONPATH=src py -X utf8 -m labelcheck gui
 QT_QPA_PLATFORM=offscreen PYTHONPATH=src py -X utf8 -m labelcheck gui --check   # 无显示环境冒烟
 
 # 打包（需 pkg extra）——构建 + 自动校验
-py -3.8 -X utf8 tools/build_exe.py --clean
-py -3.8 -X utf8 tools/verify_package.py          # 中立环境验收（清环境变量）
-py -3.8 -X utf8 tools/verify_package.py --json
+py -3.12 -X utf8 tools/build_exe.py --clean
+py -3.12 -X utf8 tools/verify_package.py          # 中立环境验收（清环境变量）
+py -3.12 -X utf8 tools/verify_package.py --json
 
 # 演示素材（需 gui extra；离屏渲染）
-py -3.8 -X utf8 tools/make_demo_assets.py
-py -3.8 -X utf8 tools/make_demo_assets.py --check
+py -3.12 -X utf8 tools/make_demo_assets.py
+py -3.12 -X utf8 tools/make_demo_assets.py --check
 
 # 内置基准（仓库真实数据下必须全部达标 → exit 0）
 PYTHONPATH=src py -X utf8 -m labelcheck bench
@@ -124,11 +128,11 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src py -3.12 -X utf8 -m pytest tests/ -q
 
 ## 五、本机环境事实与坑（沿用 M0–M5，仅列实测）
 
-- 解释器：`py -0p` → **3.8.8** 与 **3.12**；Windows 上 `python` 是商店占位符，**一律用 `py`**；
-  命令加 `-X utf8`。**Git Bash 里 `python - <<'PY'`（heredoc）在本机是商店占位符**，用 `py -X utf8 -`。
-- **PySide6 6.6.3.1**（3.8 与 3.12 均装）、**PyInstaller 3.8=5.13.2 / 3.12=6.22.3**、
-  openpyxl 3.1.5（仅 3.8）、Pillow 10.4.0（仅 3.8）。**PyInstaller 5/6 的 PYZ 写法差异**：
-  用 `PYZ(analysis.pure)`（两版都接受；6 已移除 `zipped_data`）。
+- 解释器：`py -0p` → **3.12**（3.8.8 仍在机器上但已 EOL，v0.2.0 起不再支持）；Windows 上 `python`
+  是商店占位符，**一律用 `py`**；命令加 `-X utf8`。**Git Bash 里 `python - <<'PY'`（heredoc）在本机是商店占位符**，用 `py -X utf8 -`。
+- **PySide6 6.12.0**、**PyInstaller 6.22.3**、openpyxl 3.1.5（三者同一 py3.12 环境，v0.2.0 实测）。
+  旧 M5 口径（3.8 装 6.6.3.1 / PyInstaller 5.13.2、openpyxl 与 Pillow 仅 3.8）已作废。
+  **PyInstaller 5/6 的 PYZ 写法差异**：用 `PYZ(analysis.pure)`（两版都接受；6 已移除 `zipped_data`）。
 - **离屏 Qt**：`QT_QPA_PLATFORM=offscreen`；会打印 `QFontDatabase: Cannot find font directory`
   与 `This plugin does not support propagateSizeHints()`——**无害**，不是失败。
 - **构建前必须杀掉残留的 `labelcheck-gui.exe`**：否则 `dist/` 里的 `base_library.zip` 被占用，
@@ -145,10 +149,10 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src py -3.12 -X utf8 -m pytest tests/ -q
 ## 六、M5 DoD 逐项核对（已闭合）
 
 - [x] **PySide6 界面（FR-12）**：六页签；GUI 只渲染引擎结果、零判定逻辑（AST 守门锁死）
-- [x] **依赖走 optional extra**：`gui = ["PySide6"]`；本机 3.8 实测 6.6.3.1；GUI 测试
-      `pytest.importorskip("PySide6")` 声明式跳过
+- [x] **依赖走 optional extra**：`gui = ["PySide6>=6.12,<7"]`（v0.2.0 口径；M5 当时为 `["PySide6"]`）；
+      本机 py3.12 实测 6.12.0；GUI 测试 `pytest.importorskip("PySide6")` 声明式跳过
 - [x] **PyInstaller onedir 双 exe**：GUI（`console=False`）+ CLI（`console=True`）；
-      CLI 排除 Qt（≈14 MB）/ GUI 含 Qt（≈158 MB）
+      CLI 排除 Qt（文件夹 17 MB）/ GUI 含 Qt（文件夹 112 MB）
 - [x] **数据白名单内嵌 + 构建后校验**：`build_datas()` 白名单；`verify_dist()` 断言数据目录
       **落在 dist 之内**；中立环境实跑——**实测双 exe 均通过**（`frozen=True`、规则 27 条）
 - [x] **演示素材**：`tools/make_demo_assets.py` 离屏渲染 `docs/demo/`（截图 + GIF），进 README
@@ -156,11 +160,15 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src py -3.12 -X utf8 -m pytest tests/ -q
       交付形态 / 守门 / 已知边界）
 - [x] **plan 回写**：`plan/04 §十二` 新增 GUI/打包章节 + §十守门表 + §十一接口清单；
       `plan/03` 模块表与 §九状态；`plan/05` M5 DoD；`plan/06` D36–D40；`plan/00` 回写
-- [x] **测试全绿（420 项）**：3.8 通过 420；3.12 通过 419 + 1 skip（XLSX 确定性需 openpyxl）；
+- [x] **测试全绿（420 项，M5 当时口径）**：3.8 通过 420；3.12 通过 419 + 1 skip（XLSX 确定性需 openpyxl）；
       GUI 服务层 19 + 分层守门 7 + 页签 offscreen 23 + 打包 18（含 2 项真 exe 实跑）
+      > **v0.2.0 现状（2026-10-19）**：全量 **463 项**、py3.12 单一解释器全通过、CI 各 job 均装 `report`
+      > extra 故 XLSX 用例真跑（不再有"永远 skip"）。见 `update/03-执行记录.md`。
 - [x] 生成器 4 个 `--check` 位级一致；`selfcheck` 生效 27 条；`bench` 三类全达标
 - [x] CI 新增 `gui-smoke`（windows/py3.12 + offscreen）与 `packaging-guard`（windows3.8 +
       ubuntu3.12，core-only 零 PyInstaller）两个 job；4 job 全过 YAML 守门
+      > **v0.2.0 现状（2026-10-19）**：CI 扩为 5 类 8 job（test×2 / cli-smoke×2 / gui-smoke /
+      > packaging-guard×2 / **package**），全 py3.12；含每 job 收集数对账与真 exe 构建验收。
 
 **偏差说明**：
 

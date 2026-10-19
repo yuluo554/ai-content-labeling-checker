@@ -45,15 +45,15 @@ PYTHONDONTWRITEBYTECODE=1 py -X utf8 tools/gen_parse.py               # 生成�
 
 ```bash
 # 构建免安装双 exe（GUI 窗口版 + CLI 控制台版）+ 构建后自动校验
-py -3.8 -X utf8 tools/build_exe.py --clean
+py -3.12 -X utf8 tools/build_exe.py --clean
 
 # 冻结态包验收（中立环境：清 LABELCHECK_DATA_DIR、以 exe 目录为 CWD）
-py -3.8 -X utf8 tools/verify_package.py
-py -3.8 -X utf8 tools/verify_package.py --json     # CI 用
+py -3.12 -X utf8 tools/verify_package.py
+py -3.12 -X utf8 tools/verify_package.py --json     # CI 用
 
 # 生成 README 演示素材（离屏渲染真实界面；需 gui extra）
-py -3.8 -X utf8 tools/make_demo_assets.py
-py -3.8 -X utf8 tools/make_demo_assets.py --check  # 只校验素材存在
+py -3.12 -X utf8 tools/make_demo_assets.py
+py -3.12 -X utf8 tools/make_demo_assets.py --check  # 只校验素材存在
 ```
 
 **为什么"构建"与"验收"分开、且验收必须中立**：数据目录定位有四个分支，其中"环境变量"与

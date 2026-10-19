@@ -6,7 +6,8 @@
 
 **全本地核查、零上传**：被核查内容可能含商业敏感信息，工具默认不联网，且**不做任何去水印/标识规避**（明确非目标）。
 
-> 状态：✅ **v0.1.0 已发布（2026-10-13）**——GitHub 仓库 + **Release v0.1.0**（挂免安装双 exe 的
+> 状态：✅ **v0.1.0 已发布（2026-10-13）**；**v0.2.0 已在本地构建并验证、尚未发布**（2026-10-19）。
+> v0.1.0 = GitHub 仓库 + **Release v0.1.0**（挂免安装双 exe 的
 > ASCII 命名 zip）；发布前经**脱敏四步审计**（`tools/audit_desensitize.py`：内容扫描 + 提交邮箱 +
 > 资产口径 + 版权口径 + 产物本体扫描，含探测器阳性/阴性对照），内容侧**阻断项 0**，提交邮箱已全历史
 > 改写为 GitHub noreply。CI 8 job 全绿；发布物本体经下载核 sha256 + 中立目录冻结态自检。
@@ -91,7 +92,7 @@ labelcheck bench --json       # 机器可读（供 CI / 二次加工）
 - **期望值不抄引擎**：由**注入点**推出（"注入了字段 F 缺失 → F 应判 fail"）；合规取值/位置/枚举
   **从规则库派生**，故规则库一变基准跟着变——基准对口径漂移**敏感**，不是自证自话。
 - **误报率是硬口径 0**：把合规件判成违规比漏检更伤用户信任，故单列为"越小越好"的指标。
-- **零 API / 纯规则通路**：`benchmark/` 零第三方依赖、零系统时钟（守门测试锁死）；全量 **0.12 s**。
+- **零 API / 纯规则通路**：`benchmark/` 零第三方依赖、零系统时钟（守门测试锁死）；本机 py3.12 进程内 5 次实测 **0.209–0.236 s**（参考值，随机器变化；旧文档的 0.12 s 已作废）。
 - 复现：`python -m pytest tests/test_benchmark_runner.py`（仓库数据下三类基准必须全部达标）。
 
 ## 桌面界面与双 exe（M5）
@@ -136,7 +137,9 @@ python tools/verify_package.py      # 中立环境验收（清环境变量 + 以
 
 > **内嵌数据走白名单**（`rules`/`mapping`/`truth`/`parse`/`samples`/`knowledge`），不整仓塞 `data/`；
 > 构建后**必须验伪**——断言冻结态解析到的数据目录**落在 dist 之内**（否则可能兜底命中仓库数据，
-> 出现"本机能跑、换机就崩"）。CLI exe 不含 Qt（实测 ≈13 MB），GUI exe 含 Qt（≈158 MB）。
+> 出现"本机能跑、换机就崩"）。体积口径：**v0.1.0 Release 附件实测** CLI 文件夹 17 MB / GUI 112 MB
+> （zip 7,401,819 B / 45,767,613 B）；**v0.2.0 本机构建**（py3.12 + PySide6 6.12 + PyInstaller 6.22）
+> CLI 19 MB / GUI 120 MB——**以你下载到的 Release 附件为准**，旧文档的 ≈13/≈158 MB 已作废。
 > 演示素材由 `python tools/make_demo_assets.py` 离屏渲染真实界面产出（保证与当前代码一致）。
 
 ## 下载即用（免安装）
@@ -153,7 +156,7 @@ python tools/verify_package.py      # 中立环境验收（清环境变量 + 以
 
 ## 快速开始
 
-要求 Python 3.8+（无第三方依赖即可跑核心功能）。
+要求 Python 3.12+（无第三方依赖即可跑核心功能；3.8 已于 2024-10-07 EOL，v0.2.0 起不再支持）。
 
 ```bash
 python -m venv .venv
@@ -189,6 +192,15 @@ labelcheck scan ./content-dir --baseline round1.json --out ./report-out
 labelcheck bench
 labelcheck bench --json
 
+# 额外导出格式（v0.2.0，只读旁路；不进默认报告包、不改证据链指纹）
+labelcheck scan ./content-dir --sarif results.sarif     # SARIF 2.1.0（接入代码扫描平台）
+labelcheck scan ./content-dir --html report.html        # 单文件 HTML（内联 CSS、零 JS、零外链）
+
+# 规则库只读查询（v0.2.0）：条目 / 字段映射 / 依据坐标
+labelcheck rules                                        # 人类可读（缺省连 pending 一起列）
+labelcheck rules --scope implicit --status verified      # 过滤
+labelcheck rules --mapping --json                       # 含字段映射表，机器可读
+
 # 版本与规则库坐标
 labelcheck version
 
@@ -203,6 +215,12 @@ python -m pytest -ra
 > `detail.csv`（每 finding 一行）、`evidence.json`（证据链）与 `report.xlsx`（装了 `openpyxl` 时；
 > 缺失则**只导 CSV 并提示**，退出码仍 0，不崩）。**相同输入两次导出逐字节一致**（含 XLSX：
 > 其内部时间戳已钉死），`evidence.json` 含报告自身 sha256 → 报告被改动即可检出。
+
+> **额外导出（v0.2.0）**：`--sarif FILE` 与 `--html FILE` 写到**你指定的路径**，是对既有结果的
+> **只读旁路**——默认五产物的字节与 `evidence.json` 指纹都不因此改变。SARIF 里 `fail → level`
+> 由既有 `severity` 固定映射（critical→error / major→warning / minor→note），`unknown` 保留为
+> `level=note`（抹掉它等于把"没检查"说成"没问题"），`skipped` 不导出。HTML 单文件内联样式、
+> 零 JS、零外链（打开报告不产生任何联网）。
 
 **退出码语义**（脚本化使用的契约，已被测试逐码锁死）：
 
@@ -241,11 +259,11 @@ src/labelcheck/           核心包（核心层零第三方依赖）
   benchmark/              **内置评测基准**（M4：cases 单一实现源 + 三 runner，零第三方）
   gui/                    **桌面界面**（M5：services 零 Qt 服务层 + format 渲染 + tabs 六页签 + main_window）
   packaging/              **打包支持**（M5：数据白名单 + 冻结态验伪 + 构建前置检查）
-  cli/                    argparse 入口（check / parse / scan / bench / gui / selfcheck / version）
+  cli/                    argparse 入口（check / parse / scan / bench / gui / rules / selfcheck / version）
 docs/                     技术报告（技术报告.md）+ 演示素材（demo/，离屏渲染产出）
 tests/                    全离线测试（含架构守门 + 生成器位级一致 + 解析回归 + 扫描/对账/报告 + 基准 + GUI/打包）
 tools/                    生成器（gen_* 四个）+ 打包/验收（build_exe / verify_package / labelcheck.spec / entry_*）+ 演示素材 + 脱敏审计（audit_desensitize，发布门）
-.github/workflows/        CI（windows×{3.8,3.12} + ubuntu×3.12）
+.github/workflows/        CI（test×2 / cli-smoke×2 / gui-smoke / packaging-guard×2 / package，全 py3.12）
 ```
 
 架构分层与选型理由见 [plan/03-架构与技术选型.md](plan/03-架构与技术选型.md)；模块契约（规则库 schema、字段映射、分级算法、退出码、GUI/打包）见 [plan/04-模块详设.md](plan/04-模块详设.md)；技术报告见 [docs/技术报告.md](docs/技术报告.md)。
