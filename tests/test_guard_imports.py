@@ -158,7 +158,7 @@ def test_declared_dependencies_is_empty():
     """pyproject 核心 ``dependencies`` 必须为空（重件走 extras）。"""
     pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
     text = pyproject.read_text(encoding="utf-8")
-    # 用 toml 解析（3.8 无 tomllib；此处做轻量文本断言，避免引入第三方）
+    # 轻量文本断言（不引入 tomli 依赖，保持本测试零第三方）
     assert "dependencies = []" in text, "核心 dependencies 必须为空数组"
 
     # 同时防"改名绕开"：脚本入口必须指向 labelcheck.cli.main:main

@@ -146,6 +146,31 @@ def test_shipped_registry_declares_sha256_for_every_version():
                     doc["doc_id"], ver["version"], sha))
 
 
+def test_registry_declares_next_review_for_every_document_and_version():
+    """依据现行性须有**下次复核**日期（v0.2.0 新增门禁，D48）。
+
+    只有"核对日期"而没有"下次复核"时，规则库会无声过期——读者无法判断这条依据
+    是否还在有效期内。故文档级与版本级都要求 ``next_review``（``YYYY-MM-DD``），
+    且必须晚于 ``effective_from``（写反了等于没复核）。
+    """
+    import re
+
+    pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+    registry = json.loads((DATA / "rules" / "registry.json").read_text(encoding="utf-8"))
+    for doc in registry["documents"]:
+        doc_next = doc.get("next_review")
+        assert isinstance(doc_next, str) and pattern.match(doc_next), (
+            "文档 {0} 缺合法 next_review：{1!r}".format(doc["doc_id"], doc_next))
+        for ver in doc["versions"]:
+            ver_next = ver.get("next_review")
+            assert isinstance(ver_next, str) and pattern.match(ver_next), (
+                "版本 {0}@{1} 缺合法 next_review：{2!r}".format(
+                    doc["doc_id"], ver["version"], ver_next))
+            assert ver_next > ver["effective_from"], (
+                "版本 {0}@{1} 的 next_review 必须晚于 effective_from".format(
+                    doc["doc_id"], ver["version"]))
+
+
 def test_every_pending_rule_declares_article_placeholder():
     """即便 pending，也要有 clause.article 占位——避免"忘了挂依据"落库。"""
     registry = json.loads((DATA / "rules" / "registry.json").read_text(encoding="utf-8"))

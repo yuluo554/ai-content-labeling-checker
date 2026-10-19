@@ -12,6 +12,7 @@
       "status": "verified",
       "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
       "note": "条号已按中国政府网全文核对（第四条–第六条）。M2：办法独有义务（第四条第二款导出文件、第六条传播平台提示）在适用性画像建立后转 verified；与国标同 target 的条目保持 pending，技术判定由 GB 45438-2025 承担，避免同一目标跨文档重复判定",
+      "next_review": "2027-01-31",
       "versions": [
         {
           "version": "2025-09-01",
@@ -20,7 +21,8 @@
           "status": "verified",
           "sha256": "1dc50369123d124c90b27f00327806e07c78964fe05c3f802fb46df895f8cd9d",
           "source_url": "https://www.gov.cn/zhengce/zhengceku/202503/content_7014286.htm",
-          "note": "条号已按中国政府网全文核对（第四条–第六条）。M2：办法独有义务（第四条第二款导出文件、第六条传播平台提示）在适用性画像建立后转 verified；与国标同 target 的条目保持 pending，技术判定由 GB 45438-2025 承担，避免同一目标跨文档重复判定"
+          "note": "条号已按中国政府网全文核对（第四条–第六条）。M2：办法独有义务（第四条第二款导出文件、第六条传播平台提示）在适用性画像建立后转 verified；与国标同 target 的条目保持 pending，技术判定由 GB 45438-2025 承担，避免同一目标跨文档重复判定",
+          "next_review": "2027-01-31"
         }
       ]
     },
@@ -34,6 +36,7 @@
       "status": "verified",
       "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
       "note": "强制性国标；M1 已按在线预览逐页核对（条款 5.1–5.4、6.1、附录 E），条目全部 verified",
+      "next_review": "2027-01-31",
       "versions": [
         {
           "version": "2025-09-01",
@@ -42,7 +45,8 @@
           "status": "verified",
           "sha256": "fc986cb1409f0ddff6de6676ecb8ac9761cdb372b1943b4a611e589857973854",
           "source_url": "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547",
-          "note": "强制性国标；M1 已按在线预览逐页核对（条款 5.1–5.4、6.1、附录 E），条目全部 verified"
+          "note": "强制性国标；M1 已按在线预览逐页核对（条款 5.1–5.4、6.1、附录 E），条目全部 verified",
+          "next_review": "2027-01-31"
         }
       ]
     }

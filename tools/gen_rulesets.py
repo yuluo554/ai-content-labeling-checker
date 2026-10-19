@@ -44,6 +44,10 @@ from labelcheck.jsonio import canonical_json, sha256_text, write_json  # noqa: E
 #: 核对日期（确定性的常量，非系统时钟——产物必须无时间戳）
 VERIFIED_AT = "2026-10-13"
 
+#: 下次复核日期（v0.2.0 新增，D48）：依据现行性要能被机器检查，而不是只写在散文里。
+#: 口径：标准换版/废止时立即复核，否则每年一次（本次 = 核对日 + 约 15 个月）。
+NEXT_REVIEW = "2027-01-31"
+
 #: GB 45438-2025 国家标准全文公开系统详情页（在线预览入口）
 GB_SOURCE_URL = (
     "https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547"
@@ -365,6 +369,7 @@ def build_registry():
             "status": doc["status"],
             "source_url": doc["source_url"],
             "note": doc["note"],
+            "next_review": NEXT_REVIEW,
             "versions": [{
                 "version": VERSION,
                 "effective_from": VERSION,
@@ -373,6 +378,7 @@ def build_registry():
                 "sha256": payload_sha256(ruleset),
                 "source_url": doc["source_url"],
                 "note": doc["note"],
+                "next_review": NEXT_REVIEW,
             }],
         })
     return {

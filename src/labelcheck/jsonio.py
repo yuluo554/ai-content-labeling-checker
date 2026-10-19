@@ -2,8 +2,8 @@
 
 纪律（plan/03 §七 / plan/05 §三.1）：
 
-- 落盘一律 LF（``newline="\\n"``）——Python 3.8 无 ``Path.write_text(newline=)``，
-  故用 ``open()`` 显式传参（``create_system`` 类漂移的文本对应物）；
+- 落盘一律 LF（``newline="\\n"``）——统一走 :func:`write_text_lf`（``open()`` 显式传参），
+  不依赖平台默认 newline（``create_system`` 类漂移的文本对应物）；
 - 产物**不含时间戳**——时间字段由调用方显式传入，保证"相同输入两次导出逐字节一致"；
 - 读入支持 ``parse_float=Decimal``（金额/阈值边界比较不受二进制浮点尾差影响）。
 """

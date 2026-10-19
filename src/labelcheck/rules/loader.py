@@ -93,6 +93,7 @@ class Ruleset(object):
                 "issuer": doc.get("issuer", ""),
                 "kind": doc.get("kind", ""),
                 "effective_from": doc.get("effective_from", ""),
+                "next_review": doc.get("next_review", ""),
             }
             for doc in self.documents
         ]
@@ -367,6 +368,7 @@ def effective_ruleset(data_dir):
             "issuer": doc.get("issuer", ""),
             "kind": doc.get("kind", ""),
             "effective_from": ver.get("effective_from", ""),
+            "next_review": doc.get("next_review") or ver.get("next_review", ""),
         })
 
         for rule in rules:
