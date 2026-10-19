@@ -162,7 +162,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src py -3.12 -X utf8 -m pytest tests/ -q
       `plan/03` 模块表与 §九状态；`plan/05` M5 DoD；`plan/06` D36–D40；`plan/00` 回写
 - [x] **测试全绿（420 项，M5 当时口径）**：3.8 通过 420；3.12 通过 419 + 1 skip（XLSX 确定性需 openpyxl）；
       GUI 服务层 19 + 分层守门 7 + 页签 offscreen 23 + 打包 18（含 2 项真 exe 实跑）
-      > **v0.2.0 现状（2026-10-19）**：全量 **463 项**、py3.12 单一解释器全通过、CI 各 job 均装 `report`
+      > **v0.2.0 现状（2026-10-19）**：全量 **465 项**、py3.12 单一解释器全通过、CI 各 job 均装 `report`
       > extra 故 XLSX 用例真跑（不再有"永远 skip"）。见 `update/03-执行记录.md`。
 - [x] 生成器 4 个 `--check` 位级一致；`selfcheck` 生效 27 条；`bench` 三类全达标
 - [x] CI 新增 `gui-smoke`（windows/py3.12 + offscreen）与 `packaging-guard`（windows3.8 +

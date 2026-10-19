@@ -88,7 +88,7 @@
 > `verify_package.py` + `make_demo_assets.py`）、`docs/技术报告.md` + `docs/demo/`（截图 + GIF）。
 > onedir **双 exe** 实测通过冻结态验伪（GUI `console=False` 文件夹 112 MB / CLI `console=True` 文件夹 17 MB，
 > CLI 排除 Qt 但保留 openpyxl；2026-10-19 按 Release 附件实测修正旧值 ≈158/≈13 MB）；
-> 测试 **420 项**全绿（3.8/3.12 双通过，3.12 跳过 1 项 XLSX 用例；v0.2.0 时为 **463 项**全 py3.12 通过）；
+> 测试 **420 项**全绿（3.8/3.12 双通过，3.12 跳过 1 项 XLSX 用例；v0.2.0 时为 **465 项**全 py3.12 通过）；
 > 生成器 4 个 `--check` 位级一致；生效规则仍 27 条。
 
 > **M4 交付物**：`src/labelcheck/benchmark/`（`cases.py` **单一实现源**（对账口径 + 三类算例）+
