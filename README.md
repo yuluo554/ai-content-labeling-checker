@@ -139,19 +139,21 @@ python tools/verify_package.py      # 中立环境验收（清环境变量 + 以
 
 > **内嵌数据走白名单**（`rules`/`mapping`/`truth`/`parse`/`samples`/`knowledge`），不整仓塞 `data/`；
 > 构建后**必须验伪**——断言冻结态解析到的数据目录**落在 dist 之内**（否则可能兜底命中仓库数据，
-> 出现"本机能跑、换机就崩"）。体积口径：**v0.1.0 Release 附件实测** CLI 文件夹 17 MB / GUI 112 MB
-> （zip 7,401,819 B / 45,767,613 B）；**v0.2.0 本机构建**（py3.12 + PySide6 6.12 + PyInstaller 6.22）
-> CLI 19 MB / GUI 120 MB——**以你下载到的 Release 附件为准**，旧文档的 ≈13/≈158 MB 已作废。
+> 出现"本机能跑、换机就崩"）。体积口径（**以你下载到的 Release 附件为准**）：
+> v0.2.0 zip CLI 8,707,964 B / GUI 49,977,434 B（解压后文件夹 19 MB / 120 MB）；
+> v0.1.0 zip 7,401,819 B / 45,767,613 B（文件夹 17 MB / 112 MB）。
+> 体积随 Qt / PyInstaller 版本变化，旧文档的 ≈13/≈158 MB 已作废。
 > 演示素材由 `python tools/make_demo_assets.py` 离屏渲染真实界面产出（保证与当前代码一致）。
 
 ## 下载即用（免安装）
 
-不想装 Python？直接下 **[Release v0.1.0](https://github.com/yuluo554/ai-content-labeling-checker/releases/tag/v0.1.0)**：
+不想装 Python？直接下 **[Release v0.2.0](https://github.com/yuluo554/ai-content-labeling-checker/releases/tag/v0.2.0)**
+（上一版 [v0.1.0](https://github.com/yuluo554/ai-content-labeling-checker/releases/tag/v0.1.0) 仍在）：
 
 | 附件 | 形态 | 用途 |
 |---|---|---|
-| `labelcheck-gui-v0.1.0-win64.zip` | 窗口版（无控制台） | 解压后双击 `labelcheck-gui.exe` |
-| `labelcheck-cli-v0.1.0-win64.zip` | 控制台版 | 脚本化 / 无 GUI 机器（可管道取 JSON、判退出码） |
+| `labelcheck-gui-v0.2.0-win64.zip` | 窗口版（无控制台） | 解压后双击 `labelcheck-gui.exe` |
+| `labelcheck-cli-v0.2.0-win64.zip` | 控制台版 | 脚本化 / 无 GUI 机器（可管道取 JSON、判退出码） |
 
 解压到任意目录即可运行（onedir 形态）。校验：`certutil -hashfile <zip> SHA256`
 （sha256 值见 Release 说明）。
