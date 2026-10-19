@@ -81,6 +81,18 @@ def _build_parser():
     p_selfcheck = sub.add_parser("selfcheck", help="自检：数据定位 + 规则库加载 + 门控计数")
     p_selfcheck.add_argument("--json", action="store_true", help="以 JSON 输出自检结果")
 
+    p_rules = sub.add_parser("rules", help="规则库只读查询：条目 / 字段映射 / 依据坐标（v0.2.0）")
+    p_rules.add_argument(
+        "--scope", default=None, choices=("explicit", "implicit"), metavar="SCOPE",
+        help="只列指定作用域的条目（explicit/implicit）；缺省全部")
+    p_rules.add_argument(
+        "--status", default=None, choices=("verified", "pending"), metavar="STATUS",
+        help="只列指定核对状态的条目；缺省全部（含 pending，便于看清待核对范围）")
+    p_rules.add_argument(
+        "--mapping", action="store_true",
+        help="同时输出字段映射表（容器键 → 国标字段，含 status）")
+    p_rules.add_argument("--json", action="store_true", help="以 JSON 输出（供程序消费）")
+
     sub.add_parser("version", help="打印版本与规则库坐标")
 
     p_scan = sub.add_parser("scan", help="批量扫描：目录/清单 → 逐件核验 + 报告导出（M3）")
@@ -113,6 +125,12 @@ def _build_parser():
     )
     p_scan.add_argument("--quiet", action="store_true", help="关闭进度输出")
     p_scan.add_argument("-v", "--verbose", action="store_true", help="逐件输出判定明细到 stderr")
+    p_scan.add_argument(
+        "--sarif", default=None, metavar="FILE",
+        help="另存 SARIF 2.1.0 结果文件（只读导出，不进默认报告包 / 不影响证据链指纹）")
+    p_scan.add_argument(
+        "--html", default=None, metavar="FILE",
+        help="另存单文件 HTML 报告（内联 CSS、零 JS、零外链；只读导出）")
 
     p_bench = sub.add_parser("bench", help="运行内置评测基准（三类：字段规则/构造真值/两轮对账）")
     p_bench.add_argument(
@@ -284,6 +302,20 @@ def cmd_scan(args):
         if bundle.xlsx_hint:
             sys.stderr.write("提示：{0}\n".format(bundle.xlsx_hint))
 
+    # 可选导出（v0.2.0）：写**调用方指定路径**，不进默认报告包（证据链指纹不变）。
+    if args.sarif:
+        from .. import __version__
+        from ..report import write_sarif
+
+        write_sarif(result, args.sarif, generated_at=args.generated_at,
+                    tool_version=__version__)
+        sys.stderr.write("SARIF 已导出：{0}\n".format(args.sarif))
+    if args.html:
+        from ..report import write_html
+
+        write_html(result, args.html, diff=diff, generated_at=args.generated_at)
+        sys.stderr.write("HTML 报告已导出：{0}\n".format(args.html))
+
     if args.json:
         payload = result.to_dict()
         if diff is not None:
@@ -405,6 +437,109 @@ def cmd_selfcheck(args):
                 "  注：还有 {0} 条待核对（status=pending）条目未进入判定路径。\n".format(
                     payload["pending_rule_count"])
             )
+    return EXIT_OK
+
+
+def cmd_rules(args):
+    """规则库**只读**查询（v0.2.0）：条目 / 字段映射 / 依据坐标。
+
+    **纯查询语义**：不判定、不写盘、不改规则库；退出码恒为 ``0``（读不到规则库
+    属环境错误，由 ``effective_ruleset`` 抛 ``RulesetError`` → exit 3）。
+    缺省**同时列出 pending**——"哪条还没核对"本身是用户要的信息，隐藏它会让人
+    误以为规则库只有生效条目。
+    """
+    from ..errors import EXIT_OK
+    from ..jsonio import canonical_json
+    from ..mapping import load_mapping_table
+    from ..rules import effective_ruleset
+
+    data_dir = _resolve_data_dir(args)
+    ruleset = effective_ruleset(data_dir)
+
+    def matches(rule, effective):
+        if args.scope and rule.scope != args.scope:
+            return False
+        if args.status == "verified" and not effective:
+            return False
+        if args.status == "pending" and effective:
+            return False
+        return True
+
+    rows = []
+    for effective, group in ((True, ruleset.effective), (False, ruleset.pending)):
+        for rule in group:
+            if not matches(rule, effective):
+                continue
+            rows.append({
+                "rule_id": rule.rule_id,
+                "doc_id": rule.doc_id,
+                "version": rule.version,
+                "scope": rule.scope,
+                "target": rule.target,
+                "check_type": rule.check_type,
+                "severity": rule.severity,
+                "carrier": list(rule.carrier),
+                "scenarios": rule.scenarios,
+                "status": rule.status,
+                "effective": effective,
+                "clause": rule.clause.get("article", ""),
+                "source_url": rule.source_url,
+                "verified_at": rule.verified_at,
+            })
+
+    table = load_mapping_table(data_dir) if args.mapping else None
+    payload = {
+        "data_dir": str(data_dir),
+        "ruleset_coordinate": ruleset.coordinate,
+        "verified_rule_count": ruleset.verified_rule_count,
+        "pending_rule_count": ruleset.pending_rule_count,
+        "documents": ruleset.doc_versions,
+        "filters": {"scope": args.scope, "status": args.status},
+        "rules": rows,
+        "warnings": list(ruleset.warnings),
+    }
+    if table is not None:
+        payload["mapping"] = {
+            "verified_field_count": table.verified_field_count,
+            "pending_field_count": table.pending_field_count,
+            "fields": [
+                {
+                    "national_field": field.national_field,
+                    "label": field.label,
+                    "aliases": list(field.aliases),
+                    "status": field.status,
+                    "clause": field.clause.get("article", ""),
+                    "source_url": field.source_url,
+                }
+                for field in table.fields
+            ],
+        }
+
+    if args.json:
+        sys.stdout.write(canonical_json(payload, indent=2) + "\n")
+        return EXIT_OK
+
+    sys.stdout.write("规则库坐标: {0}\n".format(payload["ruleset_coordinate"]))
+    sys.stdout.write("生效规则 / 待核对: {0} / {1}\n".format(
+        payload["verified_rule_count"], payload["pending_rule_count"]))
+    for doc in payload["documents"]:
+        sys.stdout.write("  依据: {0}（{1}，{2}）version={3} status={4}\n".format(
+            doc.get("title") or doc.get("doc_id", ""),
+            doc.get("doc_number", ""), doc.get("issuer", ""),
+            doc.get("version", ""), doc.get("status", "")))
+    sys.stdout.write("条目（{0} 条）：\n".format(len(rows)))
+    sys.stdout.write("  {0:<52} {1:<9} {2:<9} {3:<10} {4:<9} {5}\n".format(
+        "rule_id", "scope", "status", "check_type", "severity", "clause"))
+    for row in rows:
+        sys.stdout.write("  {0:<52} {1:<9} {2:<9} {3:<10} {4:<9} {5}\n".format(
+            row["rule_id"], row["scope"], row["status"], row["check_type"],
+            row["severity"], row["clause"]))
+    if table is not None:
+        sys.stdout.write("字段映射（生效 {0} / 待核对 {1}）：\n".format(
+            table.verified_field_count, table.pending_field_count))
+        for field in payload["mapping"]["fields"]:
+            sys.stdout.write("  {0:<24} {1:<10} aliases={2}\n".format(
+                field["national_field"], field["status"], ", ".join(field["aliases"])))
     return EXIT_OK
 
 
@@ -537,7 +672,7 @@ def cmd_not_implemented(args, milestone):
 
     sys.stderr.write(
         "子命令 {0!r} 尚未实现（计划于 {1} 交付）。\n"
-        "当前可用：check / parse / scan / bench / gui / selfcheck / version。\n".format(
+        "当前可用：check / parse / scan / bench / gui / rules / selfcheck / version。\n".format(
             args.command, milestone)
     )
     return EXIT_USAGE
@@ -609,6 +744,7 @@ def main(argv=None):
         "scan": cmd_scan,
         "bench": cmd_bench,
         "gui": cmd_gui,
+        "rules": cmd_rules,
         "selfcheck": cmd_selfcheck,
         "version": cmd_version,
     }

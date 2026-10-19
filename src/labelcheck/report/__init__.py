@@ -43,6 +43,23 @@ DETAIL_CSV = "detail.csv"
 REPORT_XLSX = "report.xlsx"
 EVIDENCE_JSON = "evidence.json"
 
+#: 可选导出（v0.2.0 追加）：按调用方指定路径另存，**不进默认报告包**——
+#: 默认五产物的字节与证据链指纹保持不变（既有契约不因新格式而漂移）。
+REPORT_SARIF = "report.sarif"
+REPORT_HTML = "report.html"
+
+#: SARIF 的 level 映射（取自既有 severity，不新增判定语义）
+_SARIF_LEVEL = {
+    SEVERITY_CRITICAL: "error",
+    SEVERITY_MAJOR: "warning",
+    SEVERITY_MINOR: "note",
+}
+
+#: SARIF 工具坐标（driver.name 固定，便于下游按工具名过滤）
+SARIF_TOOL_NAME = "labelcheck"
+SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
+SARIF_VERSION = "2.1.0"
+
 #: 严重度排序权重（违规清单按此排序：critical → major → minor）
 _SEVERITY_ORDER = {SEVERITY_CRITICAL: 0, SEVERITY_MAJOR: 1, SEVERITY_MINOR: 2}
 
@@ -323,6 +340,371 @@ def render_detail_csv(scan):
     return _csv_text(header, rows)
 
 
+# ------------------------------------------------------------------ SARIF 2.1.0
+def _sarif_uri(path):
+    """把件路径转成 SARIF ``artifactLocation.uri``（统一 POSIX、不做 URL 编码）。
+
+    扫描结果里的路径本就是相对 POSIX 形态（见 ``scan._display_path``），
+    这里只做防御性反斜杠归一，保证跨平台导出字节一致。
+    """
+    return str(path or "").replace("\\", "/")
+
+
+def render_sarif(scan, generated_at="", tool_version=""):
+    """把扫描结果导出为 **SARIF 2.1.0** 文本（JSON，LF 结尾）。
+
+    **语义纪律（不改判定）**：只有报告里**已经存在**的 Finding 才会出现——
+
+    - ``fail`` → ``level`` 由既有 ``severity`` 固定映射（critical→error /
+      major→warning / minor→note）；
+    - ``unknown`` → ``level="note"`` 且 ``properties.status="unknown"``：本项目
+      的既定口径是"未观测/缺值 ≠ 合规"，把它从导出里抹掉会制造假合规；
+    - ``skipped`` → **不导出**（不适用不是问题，与报告口径一致）；
+    - 失败件（读取/解析失败）→ 一条 ``level="error"`` 的结果，``ruleId=scan_error``。
+
+    ``ruleId`` 取**原因码**（如 ``field_absent``），规则元数据里带条款与依据坐标；
+    ``generated_at`` 为空时**不写** ``startTimeUtc``（产物保持无时钟 → 可复现）。
+    """
+    results = []
+    rules = []
+    seen_rules = set()
+
+    def rule_entry(rule_id, doc_id, article, target, scope, severity):
+        if rule_id in seen_rules:
+            return
+        seen_rules.add(rule_id)
+        rules.append({
+            "id": rule_id,
+            "name": rule_id,
+            "shortDescription": {"text": "标识核查规则 {0}".format(rule_id)},
+            "properties": {
+                "doc_id": doc_id or "",
+                "clause": article or "",
+                "target": target or "",
+                "scope": scope or "",
+                "severity": severity or "",
+            },
+        })
+
+    for item in scan.items:
+        if item.failed:
+            rule_entry("scan_error", "", "", "", "", "critical")
+            results.append({
+                "ruleId": "scan_error",
+                "level": "error",
+                "message": {"text": "扫描失败：{0}".format(item.error or item.code or "")},
+                "locations": [{
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": _sarif_uri(item.path)},
+                    },
+                }],
+                "properties": {
+                    "status": "failed",
+                    "code": item.code or "",
+                    "path": item.path,
+                },
+            })
+            continue
+
+        for finding in item.report.all_findings:
+            if finding.status not in ("fail", "unknown"):
+                continue
+            clause = finding.clause or {}
+            rule_id = finding.code or finding.target or "unknown"
+            rule_entry(
+                rule_id,
+                clause.get("doc_id", ""),
+                clause.get("article", ""),
+                finding.target,
+                finding.scope,
+                finding.severity,
+            )
+            if finding.status == "fail":
+                level = _SARIF_LEVEL.get(finding.severity, "warning")
+            else:
+                level = "note"
+            results.append({
+                "ruleId": rule_id,
+                "level": level,
+                "message": {
+                    "text": finding.message or finding.code or finding.target,
+                },
+                "locations": [{
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": _sarif_uri(item.path)},
+                    },
+                    "logicalLocations": [{"fullyQualifiedName": finding.target}],
+                }],
+                "properties": {
+                    "status": finding.status,
+                    "code": finding.code or "",
+                    "scope": finding.scope,
+                    "target": finding.target,
+                    "severity": finding.severity,
+                    "scenario": finding.scenario,
+                    "card_id": item.card_id,
+                    "clause": clause.get("article", ""),
+                    "doc_id": clause.get("doc_id", ""),
+                },
+            })
+
+    invocation = {"executionSuccessful": True}
+    if generated_at:
+        invocation["startTimeUtc"] = generated_at
+
+    payload = {
+        "$schema": SARIF_SCHEMA,
+        "version": SARIF_VERSION,
+        "runs": [{
+            "tool": {
+                "driver": {
+                    "name": SARIF_TOOL_NAME,
+                    "version": tool_version or "",
+                    "informationUri": "https://github.com/yuluo554/ai-content-labeling-checker",
+                    "rules": rules,
+                },
+            },
+            "invocations": [invocation],
+            "results": results,
+            "properties": {
+                "ruleset_coordinate": scan.ruleset_coordinate or "",
+                "verified_rule_count": scan.verified_rule_count,
+                "pending_rule_count": scan.pending_rule_count,
+                "disclaimer": DISCLAIMER,
+            },
+        }],
+    }
+    return canonical_json(payload, indent=2) + "\n"
+
+
+# ------------------------------------------------------------------ HTML（单文件）
+_HTML_STYLE = """
+:root { color-scheme: light dark; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+       max-width: 1100px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+h1 { font-size: 1.5rem; border-bottom: 2px solid #888; padding-bottom: .4rem; }
+h2 { font-size: 1.15rem; margin-top: 2rem; }
+table { border-collapse: collapse; width: 100%; margin: .8rem 0; font-size: .9rem; }
+th, td { border: 1px solid #999; padding: .35rem .5rem; text-align: left;
+         vertical-align: top; word-break: break-word; }
+th { background: rgba(127,127,127,.18); }
+.meta { font-size: .9rem; }
+.disclaimer { border-left: 4px solid #c60; padding: .5rem .8rem;
+              background: rgba(204,102,0,.08); }
+.tag { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
+.empty { color: #777; font-style: italic; }
+"""
+
+
+def _html_escape(value):
+    """HTML 转义（含引号；件路径/备注来自用户输入，必须转义）。"""
+    import html
+
+    return html.escape("" if value is None else str(value), quote=True)
+
+
+def _html_cell(value):
+    return _html_escape(value)
+
+
+def render_html(scan, diff=None, generated_at=""):
+    """渲染**单文件** HTML 报告（内联 CSS、零 JS、零外部资源）。
+
+    **为什么单文件 + 零 JS + 零外链**：本工具承诺"全本地、零上传"——报告若引用
+    CDN 脚本或外链字体，打开报告就等于联网。故全部样式内联，可直接归档/邮件附件。
+
+    内容段与 ``report.md`` 对齐（范围 / 依据 / 逐件 / 逐字段 / 违规 / 失败件 /
+    对账 / 结论），并**原样保留强制免责声明**。
+    """
+    summary = scan.summary
+    out = []
+    add = out.append
+
+    add("<!DOCTYPE html>")
+    add('<html lang="zh-CN">')
+    add("<head>")
+    add('<meta charset="utf-8">')
+    add('<meta name="viewport" content="width=device-width, initial-scale=1">')
+    add("<title>AI 生成合成内容标识合规核查报告</title>")
+    add("<style>{0}</style>".format(_HTML_STYLE))
+    add("</head>")
+    add("<body>")
+    add("<h1>AI 生成合成内容标识合规核查报告</h1>")
+    add('<p class="meta">')
+    add("生成时间：{0}<br>".format(_html_escape(generated_at or "(未提供)")))
+    add("规则库坐标：{0}<br>".format(_html_escape(scan.ruleset_coordinate or "(无)")))
+    add("生效规则 / 待核对：{0} / {1}".format(
+        scan.verified_rule_count, scan.pending_rule_count))
+    if scan.root:
+        add("<br>扫描根：{0}".format(_html_escape(scan.root)))
+    add("</p>")
+    add('<p class="disclaimer"><strong>免责声明</strong>：{0}</p>'.format(
+        _html_escape(DISCLAIMER)))
+
+    # 一、核查范围
+    add("<h2>一、核查范围</h2>")
+    add("<ul>")
+    add("<li>件数：共 {0} 件（已核验 {1}，失败 {2}）</li>".format(
+        summary["total"], summary["checked"], summary["failed"]))
+    add("<li>检出违规件：{0}；含待人工确认项件：{1}</li>".format(
+        summary["violations"], summary["reviews"]))
+    add("<li>载体分布：{0}</li>".format(_html_escape(_kv(summary["carriers"]))))
+    add("<li>数据来源分布：{0}</li>".format(
+        _html_escape(_kv(summary["sources"]) or "(无)")))
+    add("<li>合规等级分布：{0}</li>".format(_html_escape(_grade_kv(summary["grades"]))))
+    scenarios = _distinct(item.scenario for item in scan.checked)
+    if scenarios:
+        add("<li>适用场景：{0}</li>".format(_html_escape("、".join(scenarios))))
+    unobserved = _distinct(
+        scope for item in scan.checked for scope in
+        [key for key in ("explicit", "implicit") if not item.observed.get(key, True)])
+    if unobserved:
+        add("<li>未观测作用域（相关判定为 unknown，<strong>不代表合规或违规</strong>）："
+            "{0}</li>".format(_html_escape("、".join(unobserved))))
+    degraded = [(item.path, item.reasons) for item in scan.checked if item.reasons]
+    if degraded:
+        add("<li>解析降级件：{0} 件<ul>".format(len(degraded)))
+        for path, reasons in degraded:
+            add("<li>{0}：{1}</li>".format(
+                _html_escape(path), _html_escape("、".join(reasons))))
+        add("</ul></li>")
+    add("</ul>")
+
+    # 二、依据清单
+    add("<h2>二、依据清单</h2>")
+    add("<ul>")
+    for entry in _basis_entries(scan):
+        add("<li><strong>{0}</strong>（{1}，{2}）—— 版本 {3}，施行 {4}；status={5}</li>".format(
+            _html_escape(entry.get("title") or entry.get("doc_id", "")),
+            _html_escape(entry.get("doc_number", "")),
+            _html_escape(entry.get("issuer", "")),
+            _html_escape(entry.get("version", "")),
+            _html_escape(entry.get("effective_from", "")),
+            _html_escape(entry.get("status", "")),
+        ))
+    add("</ul>")
+
+    # 三、逐件可观测性
+    add("<h2>三、逐件结果</h2>")
+    add("<h3>3.1 逐件可观测性</h3>")
+    add("<table><thead><tr>"
+        "<th>件 id</th><th>路径</th><th>来源</th><th>场景</th>"
+        "<th>显式已观测</th><th>隐式已观测</th><th>解析降级原因</th>"
+        "</tr></thead><tbody>")
+    for item in scan.items:
+        if item.failed:
+            add("<tr><td>（失败件）</td><td>{0}</td><td>—</td><td>—</td>"
+                "<td>—</td><td>—</td><td>{1}</td></tr>".format(
+                    _html_cell(item.path), _html_cell(item.error)))
+            continue
+        add("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>"
+            "<td>{4}</td><td>{5}</td><td>{6}</td></tr>".format(
+                _html_cell(item.card_id), _html_cell(item.path), _html_cell(item.source),
+                _html_cell(item.scenario),
+                _html_cell(_observed_label(item.observed.get("explicit", True))),
+                _html_cell(_observed_label(item.observed.get("implicit", True))),
+                _html_cell("、".join(item.reasons) or "—")))
+    add("</tbody></table>")
+
+    # 3.2 逐字段
+    add("<h3>3.2 逐要素/逐字段判定</h3>")
+    add("<table><thead><tr>"
+        "<th>件 id</th><th>载体</th><th>要素/字段</th><th>状态</th>"
+        "<th>严重度</th><th>原因码</th><th>条款</th>"
+        "</tr></thead><tbody>")
+    for item in scan.items:
+        if item.failed:
+            add("<tr><td>{0}</td><td>—</td><td>—</td><td>failed</td>"
+                "<td>—</td><td>{1}</td><td>—</td></tr>".format(
+                    _html_cell(item.card_id or item.path), _html_cell(item.code)))
+            continue
+        for finding in item.report.all_findings:
+            add("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>"
+                "<td>{4}</td><td>{5}</td><td>{6}</td></tr>".format(
+                    _html_cell(item.card_id), _html_cell(item.carrier),
+                    _html_cell(finding.target), _html_cell(finding.status),
+                    _html_cell(finding.severity), _html_cell(finding.code),
+                    _html_cell(_clause_text(finding.clause))))
+    add("</tbody></table>")
+
+    # 四、违规清单
+    add("<h2>四、违规清单（按严重度排序）</h2>")
+    violations = _violations_sorted(scan)
+    if not violations:
+        add('<p class="empty">（无明确不合规项）</p>')
+    else:
+        add("<table><thead><tr>"
+            "<th>件 id</th><th>载体</th><th>要素/字段</th>"
+            "<th>严重度</th><th>原因码</th><th>条款</th>"
+            "</tr></thead><tbody>")
+        for item, finding in violations:
+            add("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>"
+                "<td>{4}</td><td>{5}</td></tr>".format(
+                    _html_cell(item.card_id), _html_cell(item.carrier),
+                    _html_cell(finding.target), _html_cell(finding.severity),
+                    _html_cell(finding.code), _html_cell(_clause_text(finding.clause))))
+        add("</tbody></table>")
+
+    # 五、失败件
+    if scan.failed:
+        add("<h2>五、失败件清单</h2>")
+        add("<table><thead><tr><th>件</th><th>原因码</th><th>说明</th>"
+            "</tr></thead><tbody>")
+        for item in scan.failed:
+            add("<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>".format(
+                _html_cell(item.path), _html_cell(item.code), _html_cell(item.error)))
+        add("</tbody></table>")
+
+    # 六、两轮对账
+    if diff is not None:
+        add("<h2>六、两轮对账</h2>")
+        dsummary = diff.summary
+        add("<ul>")
+        add("<li>上轮坐标：{0}</li>".format(
+            _html_escape(diff.previous_coordinate or "(无)")))
+        add("<li>本轮坐标：{0}</li>".format(
+            _html_escape(diff.current_coordinate or "(无)")))
+        add("<li>新增违规 {0}；已修复 {1}；持续违规 {2}（其中违规项变化 {3}）；"
+            "内容变动 {4}</li>".format(
+                dsummary["added"], dsummary["fixed"], dsummary["persistent"],
+                dsummary["persistent_changed"], dsummary["content_changed"]))
+        add("</ul>")
+        for title, entries in (
+            ("新增违规", diff.added), ("已修复", diff.fixed),
+            ("持续违规", diff.persistent), ("内容变动", diff.content_changed),
+        ):
+            if not entries:
+                continue
+            add("<h3>{0}</h3>".format(_html_escape(title)))
+            add("<ul>")
+            for entry in entries:
+                add("<li>{0}（{1}）：{2} → {3}{4}</li>".format(
+                    _html_escape(entry.card_id or entry.identity),
+                    _html_escape(entry.path),
+                    _html_escape(entry.previous_grade or "—"),
+                    _html_escape(entry.current_grade or "—"),
+                    _html_escape("（内容已变动）" if entry.content_changed else "")))
+            add("</ul>")
+
+    # 七、结论与建议
+    add("<h2>七、结论与建议</h2>")
+    add("<ul>")
+    add("<li>等级汇总：{0}</li>".format(_html_escape(_grade_kv(summary["grades"]))))
+    if summary["violations"]:
+        add("<li>建议：优先整改 <strong>critical/major</strong> 级违规项（见第四节）；"
+            "对 unknown 项补充输入后复检。</li>")
+    elif summary["failed"]:
+        add("<li>建议：先修复失败件（读取/格式问题），再复核其标识。</li>")
+    else:
+        add("<li>未发现明确不合规项；unknown 项需人工确认后定论。</li>")
+    add("<li>{0}</li>".format(_html_escape(DISCLAIMER)))
+    add("</ul>")
+
+    add("</body>")
+    add("</html>")
+    return "\n".join(out) + "\n"
+
+
 # ------------------------------------------------------------------ XLSX
 #: XLSX 文档属性的确定性时间基准（openpyxl 默认把文档属性写成"当前时刻" → 产物不可复现）。
 #: 无 ``generated_at`` 时用此固定常量；有则可解析的 ISO 时间时用调用方传入值。
@@ -534,6 +916,21 @@ def write_report(scan, out_dir, generated_at="", diff=None, include_xlsx=True):
     return bundle, written
 
 
+# ------------------------------------------------------------------ 可选导出（v0.2.0）
+def write_sarif(scan, path, generated_at="", tool_version=""):
+    """把 SARIF 2.1.0 写到**指定文件**（不进默认报告包，故不影响证据链指纹）。"""
+    text = render_sarif(scan, generated_at=generated_at, tool_version=tool_version)
+    write_text_lf(path, text)
+    return path
+
+
+def write_html(scan, path, diff=None, generated_at=""):
+    """把单文件 HTML 报告写到**指定文件**（不进默认报告包）。"""
+    text = render_html(scan, diff=diff, generated_at=generated_at)
+    write_text_lf(path, text)
+    return path
+
+
 # ------------------------------------------------------------------ 辅助
 def _cell(value):
     """Markdown 表格单元转义（``|`` 会打断表格）。"""
@@ -619,6 +1016,8 @@ __all__ = [
     "build_report", "write_report", "ReportBundle",
     "render_markdown", "render_summary_csv", "render_detail_csv",
     "render_xlsx_bytes", "render_evidence",
+    "render_sarif", "render_html", "write_sarif", "write_html",
     "REPORT_MD", "SUMMARY_CSV", "DETAIL_CSV", "REPORT_XLSX", "EVIDENCE_JSON",
+    "REPORT_SARIF", "REPORT_HTML", "SARIF_TOOL_NAME", "SARIF_SCHEMA", "SARIF_VERSION",
     "GRADE_LABELS",
 ]
