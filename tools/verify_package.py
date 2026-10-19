@@ -29,6 +29,17 @@ from labelcheck.packaging import (  # noqa: E402
 )
 
 
+def _ensure_utf8_stdio():
+    """切 stdout/stderr 到 UTF-8（CI 的 Windows runner 为 cp1252，中文输出会崩）。
+
+    实测（run 39256881923）：验收逻辑全部通过，最后一行
+    ``冻结态包验收：通过`` 却抛 ``UnicodeEncodeError`` → job 红。
+    """
+    from _utf8_stdio import ensure_utf8_stdio
+
+    ensure_utf8_stdio()
+
+
 def _resolve_dir(dist_dir, name):
     """定位某个 exe 所在目录（兼容 PyInstaller 5 平铺与 6 onedir 布局）。"""
     dist_dir = Path(dist_dir)
@@ -41,6 +52,7 @@ def _resolve_dir(dist_dir, name):
 
 
 def main(argv=None):
+    _ensure_utf8_stdio()
     parser = argparse.ArgumentParser(description="冻结态包验收（内嵌数据可用性）")
     parser.add_argument("--dist", default=None, metavar="DIR", help="dist 目录（默认 dist/）")
     parser.add_argument("--json", action="store_true", help="以 JSON 输出（CI 用）")

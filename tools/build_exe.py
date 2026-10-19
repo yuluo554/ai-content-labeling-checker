@@ -34,25 +34,14 @@ SPEC = _ROOT / "tools" / "labelcheck.spec"
 def _ensure_utf8_stdio():
     """把 stdout/stderr 切到 UTF-8（仅当当前编码不是 UTF-8 家族时）。
 
-    **为什么必须有**（CI 实测）：GitHub Actions 的 Windows runner 在无控制台时
-    stdout 编码是 **cp1252**，本脚本的中文输出会在 ``print()`` 处抛
+    **为什么必须有**（CI 实测，run 39255079702）：GitHub Actions 的 Windows runner 在
+    无控制台时 stdout 编码是 **cp1252**，本脚本的中文输出会在 ``print()`` 处抛
     ``UnicodeEncodeError`` —— 构建还没开始就失败，而本地 Git Bash（UTF-8）看不出来。
-    与 ``labelcheck.cli.main._ensure_utf8_stdio`` 同一处置口径。
+    实现见 ``tools/_utf8_stdio.py``（各 tools 脚本共用同一处置口径）。
     """
-    for stream_name in ("stdout", "stderr"):
-        stream = getattr(sys, stream_name, None)
-        if stream is None:
-            continue
-        encoding = (getattr(stream, "encoding", "") or "").lower().replace("-", "")
-        if encoding in ("utf8", "utf8mb4", "cp65001"):
-            continue
-        reconfigure = getattr(stream, "reconfigure", None)
-        if reconfigure is None:
-            continue
-        try:
-            reconfigure(encoding="utf-8", errors="replace")
-        except (ValueError, OSError):
-            pass
+    from _utf8_stdio import ensure_utf8_stdio
+
+    ensure_utf8_stdio()
 
 
 def build(clean=False, dist_dir=None):

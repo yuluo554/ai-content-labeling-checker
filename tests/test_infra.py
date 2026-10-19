@@ -184,3 +184,44 @@ def test_frozen_candidate_branch_used_when_meipass_set(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "frozen", True, raising=False)
     monkeypatch.delenv(ENV_VAR, raising=False)
     assert find_data_dir() == frozen_data.resolve()
+
+
+# ------------------------------------------------------------------ CI 编码门（v0.2.0）
+def test_tools_entrypoints_use_utf8_stdio_guard():
+    """输出中文的 tools 入口必须装 UTF-8 stdio 防护（CI 的 Windows runner 是 cp1252）。
+
+    **为什么值得单测**：修前两处真实故障——``build_exe.py`` 在构建**开始前**、
+    ``verify_package.py`` 在验收**全过之后**，都只因为一句中文 print 抛
+    ``UnicodeEncodeError`` 而让 job 变红。本地 Git Bash 是 UTF-8，看不出来。
+    这类缺陷只能靠"逐个入口检查"或真跑 CI 才能发现，故固化成门禁。
+    """
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    tools = root / "tools"
+    #: 必须在中文输出的入口里调用防护（entry_* 只转发，cli.main 自带防护）
+    required = ("build_exe.py", "verify_package.py")
+
+    offenders = []
+    for name in required:
+        path = tools / name
+        text = path.read_text(encoding="utf-8")
+        tree = ast.parse(text, filename=str(path))
+        called = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                func = node.func
+                fname = getattr(func, "id", None) or getattr(func, "attr", None)
+                if fname == "ensure_utf8_stdio":
+                    called = True
+        if not called:
+            offenders.append(name)
+    assert not offenders, (
+        "以下 tools 入口没有调用 ensure_utf8_stdio（CI cp1252 下中文输出会崩）："
+        + "、".join(offenders))
+
+    # 防护模块本身存在且不依赖第三方
+    helper = tools / "_utf8_stdio.py"
+    assert helper.is_file(), "缺少 tools/_utf8_stdio.py（共享防护实现）"
+    assert "import sys" in helper.read_text(encoding="utf-8")

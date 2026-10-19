@@ -202,15 +202,15 @@ jobs:
         run: |
           labelcheck gui --check
 
-      # 收集数对账：本 job 装齐 gui + report → 应为全量 463。
-      - name: Collection count gate (expect 463)
+      # 收集数对账：本 job 装齐 gui + report → 应为全量 464。
+      - name: Collection count gate (expect 464)
         shell: bash
         run: |
           out=$(python -m pytest tests --collect-only -q | tail -1)
           echo "$out"
           case "$out" in
-            *"463 tests collected"*) echo "collection OK (463)";;
-            *) echo "collection mismatch (expect 463): $out"; exit 1;;
+            *"464 tests collected"*) echo "collection OK (464)";;
+            *) echo "collection mismatch (expect 464): $out"; exit 1;;
           esac
 
       - name: Full test suite (offscreen)
