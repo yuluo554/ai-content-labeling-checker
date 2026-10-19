@@ -69,16 +69,16 @@ jobs:
           python tools/audit_desensitize.py --selftest
           python tools/audit_desensitize.py
 
-      # 收集数对账：本 job 不装 gui extra → test_gui_tabs 模块级 skip，应为 447。
+      # 收集数对账：本 job 不装 gui extra → test_gui_tabs 模块级 skip，应为 449。
       # 数字写死，防"少收集也绿"（collection error 会让数字变小，这里拦下）。
-      - name: Collection count gate (expect 447)
+      - name: Collection count gate (expect 449)
         shell: bash
         run: |
           out=$(python -m pytest tests --collect-only -q | tail -1)
           echo "$out"
           case "$out" in
-            *"447 tests collected"*) echo "collection OK (447)";;
-            *) echo "collection mismatch (expect 447): $out"; exit 1;;
+            *"449 tests collected"*) echo "collection OK (449)";;
+            *) echo "collection mismatch (expect 449): $out"; exit 1;;
           esac
 
       - name: Run tests
@@ -202,15 +202,15 @@ jobs:
         run: |
           labelcheck gui --check
 
-      # 收集数对账：本 job 装齐 gui + report → 应为全量 464。
-      - name: Collection count gate (expect 464)
+      # 收集数对账：本 job 装齐 gui + report → 应为全量 465。
+      - name: Collection count gate (expect 465)
         shell: bash
         run: |
           out=$(python -m pytest tests --collect-only -q | tail -1)
           echo "$out"
           case "$out" in
-            *"464 tests collected"*) echo "collection OK (464)";;
-            *) echo "collection mismatch (expect 464): $out"; exit 1;;
+            *"465 tests collected"*) echo "collection OK (465)";;
+            *) echo "collection mismatch (expect 465): $out"; exit 1;;
           esac
 
       - name: Full test suite (offscreen)

@@ -1,6 +1,7 @@
 """基础设施测试：RNG 金标准、JSON 确定性、数据目录定位四分支。"""
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -225,3 +226,31 @@ def test_tools_entrypoints_use_utf8_stdio_guard():
     helper = tools / "_utf8_stdio.py"
     assert helper.is_file(), "缺少 tools/_utf8_stdio.py（共享防护实现）"
     assert "import sys" in helper.read_text(encoding="utf-8")
+
+
+def test_tools_helper_is_importable_under_python_dash_m():
+    """``tools/_utf8_stdio.py`` 必须在 ``python -m tools.<script>`` 下可导入（CI 实测坑）。
+
+    ``python -m tools.build_exe`` 时 ``sys.path[0]`` 是**仓库根**而非 ``tools/``，
+    故 ``from _utf8_stdio import ...`` 会 ``ModuleNotFoundError``——本地直接跑
+    ``py tools/build_exe.py`` 反而看不出（那时 ``sys.path[0]`` 就是 ``tools/``）。
+    本测试以子进程按 ``-m`` 方式导入，锁死两处入口的路径注入。
+    """
+    import subprocess
+    import sys
+
+    root = Path(__file__).resolve().parent.parent
+    code = (
+        "import sys; sys.path.insert(0, 'tools');"
+        "import _utf8_stdio;"
+        "assert callable(_utf8_stdio.ensure_utf8_stdio);"
+        "print('ok')"
+    )
+    for module in ("tools.build_exe", "tools.verify_package"):
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            cwd=str(root), capture_output=True, text=True,
+            encoding="utf-8", errors="replace",
+        )
+        assert result.returncode == 0, (
+            "{0} 场景下 tools 共享模块不可导入：\n{1}".format(module, result.stderr))

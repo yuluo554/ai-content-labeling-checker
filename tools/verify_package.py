@@ -23,6 +23,10 @@ from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_ROOT / "src"))
+# ``python -m tools.verify_package`` 时 tools/ 不在 sys.path，显式加入以便导入共享防护。
+_TOOLS_DIR = str(Path(__file__).resolve().parent)
+if _TOOLS_DIR not in sys.path:
+    sys.path.insert(0, _TOOLS_DIR)
 
 from labelcheck.packaging import (  # noqa: E402
     CLI_EXE_NAME, GUI_EXE_NAME, default_dist_dir, verify_dist,

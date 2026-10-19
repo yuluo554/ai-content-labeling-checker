@@ -192,7 +192,7 @@ def test_every_pytest_job_declares_a_collection_count_gate():
         if "--collect-only" not in runs:
             offenders.append("{0}: 缺收集数对账步骤".format(job_id))
             continue
-        if not any(token in runs for token in ('"447 tests collected"', '"464 tests collected"',
+        if not any(token in runs for token in ('"449 tests collected"', '"465 tests collected"',
                                                '"18 tests collected"')):
             offenders.append("{0}: 收集数对账没有写死期望值".format(job_id))
     assert not offenders, (

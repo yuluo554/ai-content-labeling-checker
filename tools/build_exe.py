@@ -23,6 +23,10 @@ from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_ROOT / "src"))
+# ``python -m tools.build_exe`` 时 sys.path[0] 是仓库根（不是 tools/），故共享模块要显式可导入。
+_TOOLS_DIR = str(Path(__file__).resolve().parent)
+if _TOOLS_DIR not in sys.path:
+    sys.path.insert(0, _TOOLS_DIR)
 
 from labelcheck.packaging import (  # noqa: E402
     CLI_EXE_NAME, GUI_EXE_NAME, assert_ready, default_dist_dir, repo_root, verify_dist,
