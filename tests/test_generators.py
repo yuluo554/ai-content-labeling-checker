@@ -30,13 +30,22 @@ GENERATORS = ("gen_rulesets.py", "gen_mapping.py", "gen_samples.py", "gen_parse.
 
 
 def _run_tool(script, *args):
-    """以子进程跑生成器（与用户手动跑完全同路径），返回 CompletedProcess。"""
+    """以子进程跑生成器（与用户手动跑完全同路径），返回 CompletedProcess。
+
+    **两个编码口径都必须显式给**（CI 实测踩过）：
+    - 子进程带 ``-X utf8``：否则 Windows runner 的 cp1252 stdout 会在中文 print 上崩；
+    - 父进程 ``encoding="utf-8"``：``text=True`` 默认用**本机** locale 解码（cp1252），
+      读子进程的 UTF-8 中文输出时抛 ``UnicodeDecodeError``——该异常发生在 subprocess 的
+      读取线程里，pytest 只把它记为 warning，真正的失败点被掩盖。
+    """
     env = dict(os.environ)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONPATH"] = str(SRC) + os.pathsep + env.get("PYTHONPATH", "")
     return subprocess.run(
         [sys.executable, "-X", "utf8", str(TOOLS / script)] + list(args),
         cwd=str(ROOT), env=env, capture_output=True, text=True,
+        encoding="utf-8", errors="replace",
     )
 
 

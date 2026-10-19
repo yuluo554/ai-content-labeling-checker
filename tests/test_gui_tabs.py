@@ -33,8 +33,21 @@ from _support import build_data_dir, make_card, make_mapping_field, make_rule  #
 
 @pytest.fixture(scope="module")
 def app():
-    """整个模块共用一个 QApplication（Qt 不允许重复构造）。"""
-    return QApplication.instance() or QApplication([])
+    """整个模块共用一个 QApplication（Qt 不允许重复构造）。
+
+    **teardown 必须显式清空顶层窗口**：本模块 16 个用例各构造一个 ``MainWindow`` 且
+    从不 ``close()``。PySide6 6.12 下把这些窗口留给解释器退出时统一析构，进程会在
+    测试**全部通过**后以 ``0xC0000409``（fail-fast）终止——pytest 汇总行正常但退出码
+    非 0，CI 里表现为"16 passed 却红"。故在 teardown 里逐个 close + deleteLater 并
+    处理事件，再对 QApplication 执行 shutdown。
+    """
+    instance = QApplication.instance() or QApplication([])
+    yield instance
+    for widget in QApplication.topLevelWidgets():
+        widget.close()
+        widget.deleteLater()
+    instance.processEvents()
+    QApplication.shutdown(instance)
 
 
 @pytest.fixture

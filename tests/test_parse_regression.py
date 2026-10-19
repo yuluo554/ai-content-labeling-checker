@@ -137,10 +137,14 @@ def test_parse_fixtures_regeneration_is_byte_identical():
     """``tools/gen_parse.py --check`` 必须通过（禁手改，位级一致）。"""
     env = dict(os.environ)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONPATH"] = str(SRC) + os.pathsep + env.get("PYTHONPATH", "")
+    # 显式 ``encoding="utf-8"``：``text=True`` 默认按本机 locale（Windows runner 为 cp1252）
+    # 解码子进程的 UTF-8 中文输出，会抛 UnicodeDecodeError 并被 pytest 降级成 warning。
     result = subprocess.run(
         [sys.executable, "-X", "utf8", str(TOOLS / "gen_parse.py"), "--check"],
         cwd=str(ROOT), env=env, capture_output=True, text=True,
+        encoding="utf-8", errors="replace",
     )
     assert result.returncode == 0, (
         "gen_parse.py --check 失败（夹具与生成器不一致）：\n"
