@@ -18,11 +18,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 旧解释器（3.8）只在 windows 守：ubuntu 新镜像对 py3.8 支持存疑，
-        # 不硬凑四矩阵（见 plan/06 D16）。
+        # 2026-10-19（D-1）：Python 下限抬到 3.12（3.8 已于 2024-10-07 EOL），
+        # 不再保留旧解释器作业。两个 OS 同口径，避免"只在 Windows 守"的分歧。
         include:
-          - os: windows-latest
-            python-version: "3.8"
           - os: windows-latest
             python-version: "3.12"
           - os: ubuntu-latest
@@ -31,20 +29,22 @@ jobs:
       # 必须取全量历史：历史/元数据类守门测试依赖 git log，
       # 默认 fetch-depth: 1 浅克隆会让它们静默削弱成空验。
       - name: Checkout (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install package and dev extras
+      # 装 report extra：否则 tests/test_report.py 的 XLSX 确定性用例会被
+      # pytest.importorskip 静默跳过（CI 里"永远 skip" = 从未验证过）。
+      - name: Install package with dev + report extras
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[dev,report]"
 
       - name: Show environment
         shell: bash
@@ -69,6 +69,18 @@ jobs:
           python tools/audit_desensitize.py --selftest
           python tools/audit_desensitize.py
 
+      # 收集数对账：本 job 不装 gui extra → test_gui_tabs 模块级 skip，应为 447。
+      # 数字写死，防"少收集也绿"（collection error 会让数字变小，这里拦下）。
+      - name: Collection count gate (expect 447)
+        shell: bash
+        run: |
+          out=$(python -m pytest tests --collect-only -q | tail -1)
+          echo "$out"
+          case "$out" in
+            *"447 tests collected"*) echo "collection OK (447)";;
+            *) echo "collection mismatch (expect 447): $out"; exit 1;;
+          esac
+
       - name: Run tests
         shell: bash
         run: |
@@ -83,17 +95,17 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            python-version: "3.8"
+            python-version: "3.12"
           - os: ubuntu-latest
             python-version: "3.12"
     steps:
       - name: Checkout (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -161,10 +173,8 @@ jobs:
           labelcheck bench --json > bench.json
           python -c "import json; d=json.load(open('bench.json', encoding='utf-8')); assert d['passed'], d; print('bench passed:', [s['name'] for s in d['suites']])"
 
-  # GUI 可加载性冒烟（M5）：装 gui extra，离屏渲染真实控件并驱动引擎。
-  # 无显示环境用 QT_QPA_PLATFORM=offscreen；本 job 只在 windows/py3.12 跑一次
-  # （PySide6 的 windows wheel 最贴近交付形态；旧解释器 3.8 的 PySide6 版本上限
-  # 已由 tests/test_gui_*.py 的 importorskip 在 test job 里覆盖到）。
+  # GUI 可加载性冒烟（M5）：装 gui + report extra，离屏跑**全量**测试（438），
+  # 使 GUI 页签与 XLSX 确定性都被真跑一遍（不再有"只在别的 job 覆盖"的缺口）。
   gui-smoke:
     name: gui smoke (windows / py3.12, offscreen)
     runs-on: windows-latest
@@ -172,34 +182,44 @@ jobs:
       QT_QPA_PLATFORM: offscreen
     steps:
       - name: Checkout (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
-      - name: Install package with gui extras
+      - name: Install package with gui + report extras
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev,gui]"
+          python -m pip install -e ".[dev,gui,report]"
 
       - name: GUI loadability self-check
         shell: bash
         run: |
           labelcheck gui --check
 
-      - name: GUI + packaging tests (offscreen)
+      # 收集数对账：本 job 装齐 gui + report → 应为全量 463。
+      - name: Collection count gate (expect 463)
         shell: bash
         run: |
-          python -m pytest tests/test_gui_services.py tests/test_gui_layering.py \
-            tests/test_gui_tabs.py tests/test_packaging.py -ra
+          out=$(python -m pytest tests --collect-only -q | tail -1)
+          echo "$out"
+          case "$out" in
+            *"463 tests collected"*) echo "collection OK (463)";;
+            *) echo "collection mismatch (expect 463): $out"; exit 1;;
+          esac
+
+      - name: Full test suite (offscreen)
+        shell: bash
+        run: |
+          python -m pytest tests -ra
 
   # 打包守门（M5）：packaging 模块的白名单与验伪逻辑零 PyInstaller 依赖，
-  # core-only 环境即可跑（真构建 exe 耗时长，不进 CI；本地用 tools/build_exe.py）。
+  # core-only 环境即可跑。真构建见下方 package job。
   packaging-guard:
     name: packaging guard (${{ matrix.os }} / py${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
@@ -208,17 +228,17 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            python-version: "3.8"
+            python-version: "3.12"
           - os: ubuntu-latest
             python-version: "3.12"
     steps:
       - name: Checkout (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -228,7 +248,52 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
 
+      # 收集数对账：只跑 tests/test_packaging.py → 应为 18。
+      - name: Collection count gate (expect 18)
+        shell: bash
+        run: |
+          out=$(python -m pytest tests/test_packaging.py --collect-only -q | tail -1)
+          echo "$out"
+          case "$out" in
+            *"18 tests collected"*) echo "collection OK (18)";;
+            *) echo "collection mismatch (expect 18): $out"; exit 1;;
+          esac
+
       - name: Packaging guard tests (no PyInstaller needed)
         shell: bash
         run: |
           python -m pytest tests/test_packaging.py -ra
+
+  # 发布物可复现门禁（M5/D-3）：真跑 PyInstaller 构建双 exe，再用中立环境验收。
+  # 只跑 windows/py3.12（交付形态就是 win64），构建约 1 分钟量级。
+  package:
+    name: package (windows / py3.12, build + verify)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install package with all packaging extras
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,gui,report,pkg]"
+
+      # build_exe 自带 verify_dist（构建后立即断言内嵌数据落在 dist 之内）。
+      - name: Build double exe (clean)
+        shell: bash
+        run: |
+          python -m tools.build_exe --clean
+
+      # 再从中立目录跑一次发布门验收（清 LABELCHECK_DATA_DIR + 以 exe 目录为 CWD）。
+      - name: Verify frozen packages in neutral environment
+        shell: bash
+        run: |
+          python tools/verify_package.py
