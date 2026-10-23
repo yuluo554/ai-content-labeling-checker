@@ -69,16 +69,16 @@ jobs:
           python tools/audit_desensitize.py --selftest
           python tools/audit_desensitize.py
 
-      # 收集数对账：本 job 不装 gui extra → test_gui_tabs 模块级 skip，应为 449。
+      # 收集数对账：本 job 不装 gui extra → test_gui_tabs 模块级 skip，应为 456。
       # 数字写死，防"少收集也绿"（collection error 会让数字变小，这里拦下）。
-      - name: Collection count gate (expect 449)
+      - name: Collection count gate (expect 456)
         shell: bash
         run: |
           out=$(python -m pytest tests --collect-only -q | tail -1)
           echo "$out"
           case "$out" in
-            *"449 tests collected"*) echo "collection OK (449)";;
-            *) echo "collection mismatch (expect 449): $out"; exit 1;;
+            *"456 tests collected"*) echo "collection OK (456)";;
+            *) echo "collection mismatch (expect 456): $out"; exit 1;;
           esac
 
       - name: Run tests
