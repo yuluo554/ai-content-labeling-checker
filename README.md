@@ -7,7 +7,7 @@
 **全本地核查、零上传**：被核查内容可能含商业敏感信息，工具默认不联网，且**不做任何去水印/标识规避**（明确非目标）。
 
 > 状态：✅ **v0.2.0 已发布（2026-10-19）**——GitHub Release 挂免安装双 exe zip；CI 8 job 全绿
-> （含新增 `package` job 真构建 + 真验收）；本地 py3.12 全量 **465 passed**。上一版留档见
+> （含新增 `package` job 真构建 + 真验收）；本地 py3.12 全量 **475 passed / 3 skipped**。上一版留档见
 > [plan/RELEASE-M6.md](plan/RELEASE-M6.md)，本版说明见 [plan/RELEASE-NOTES-v0.2.0.md](plan/RELEASE-NOTES-v0.2.0.md)。
 > v0.1.0 = GitHub 仓库 + **Release v0.1.0**（挂免安装双 exe 的
 > ASCII 命名 zip）；发布前经**脱敏四步审计**（`tools/audit_desensitize.py`：内容扫描 + 提交邮箱 +
